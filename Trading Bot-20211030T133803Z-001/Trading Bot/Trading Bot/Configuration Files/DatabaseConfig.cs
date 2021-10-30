@@ -49,6 +49,7 @@ namespace Trading_Bot
     {
       try
       {
+        Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("Initialising Database...");
         ConnectionString = "Server = localhost; Database = automatedtradingdb; Uid = root; Pwd = Blader10;";
 
@@ -57,6 +58,7 @@ namespace Trading_Bot
 
         if (Connection.State == System.Data.ConnectionState.Broken) { throw new Exception("Invalid MySQLConnection."); }
 
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Database Initialised.");
         Console.WriteLine("-------------------------------------------------------------------------\n");
         Initialised = true;
@@ -64,6 +66,7 @@ namespace Trading_Bot
       }
       catch (Exception e)
       {
+        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(e.Message);
         Initialised = false;
 

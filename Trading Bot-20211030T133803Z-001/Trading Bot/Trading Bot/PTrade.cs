@@ -9,7 +9,7 @@ namespace Trading_Bot
   /// <summary>
   /// Trade object to describe a trade from the SQL Database.
   /// </summary>
-  public class Trade
+  public class PTrade
   {
     #region Public
     /// <summary>
@@ -55,7 +55,7 @@ namespace Trading_Bot
     /// <param name="product_ID"></param>
     /// <param name="price"></param>
     /// <param name="time"></param>
-    public Trade(int product_ID, decimal price, DateTime time)
+    public PTrade(int product_ID, decimal price, DateTime time)
     {
       Product_ID = product_ID;
       Price = price;
@@ -72,7 +72,7 @@ namespace Trading_Bot
     /// <param name="buyOrSell"></param>
     /// <param name="buy_Price"></param>
     /// <param name="sell_Price"></param>
-    public Trade(int product_ID, decimal price, DateTime time, string product_Name, char buyOrSell, decimal buy_Price, decimal sell_Price)
+    public PTrade(int product_ID, decimal price, DateTime time, string product_Name, char buyOrSell, decimal buy_Price, decimal sell_Price)
     {
       Product_ID = product_ID;
       Price = price;

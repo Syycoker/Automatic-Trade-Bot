@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net5.0": {
+    "net5.0-windows7.0": {
       "BouncyCastle.NetCore/1.8.5": {
         "type": "package",
         "compile": {
@@ -4767,7 +4767,7 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net5.0": [
+    "net5.0-windows7.0": [
       "Coinbase.Pro >= 4.1.3",
       "MySql.Data >= 8.0.27",
       "RestSharp >= 106.12.0",
@@ -4781,26 +4781,26 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Sylas Coker\\Downloads\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
+      "projectUniqueName": "C:\\Users\\Sylas Coker\\Source\\Repos\\Syycoker\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
       "projectName": "Trading Bot",
-      "projectPath": "C:\\Users\\Sylas Coker\\Downloads\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
+      "projectPath": "C:\\Users\\Sylas Coker\\Source\\Repos\\Syycoker\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
       "packagesPath": "C:\\Users\\Sylas Coker\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Sylas Coker\\Downloads\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\obj\\",
+      "outputPath": "C:\\Users\\Sylas Coker\\Source\\Repos\\Syycoker\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Sylas Coker\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
-        "net5.0"
+        "net5.0-windows7.0"
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net5.0": {
-          "targetAlias": "net5.0",
+        "net5.0-windows7.0": {
+          "targetAlias": "net5.0-windows",
           "projectReferences": {}
         }
       },
@@ -4811,8 +4811,8 @@
       }
     },
     "frameworks": {
-      "net5.0": {
-        "targetAlias": "net5.0",
+      "net5.0-windows7.0": {
+        "targetAlias": "net5.0-windows",
         "dependencies": {
           "Coinbase.Pro": {
             "target": "Package",
@@ -4845,24 +4845,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[5.0.0, 5.0.0]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[5.0.11, 5.0.11]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[5.0.0, 5.0.0]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[5.0.0, 5.0.0]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"

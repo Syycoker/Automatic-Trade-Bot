@@ -49,3 +49,54 @@ C:\Users\coker\source\repos\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot
 C:\Users\coker\source\repos\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.genruntimeconfig.cache
 C:\Users\coker\source\repos\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.csproj.AssemblyReference.cache
 C:\Users\coker\source\repos\Trading Bot\Trading Bot\bin\Debug\net5.0\RestSharp.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Trading Bot.exe
+C:\Users\Sylas Coker\source\repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Trading Bot.deps.json
+C:\Users\Sylas Coker\source\repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Trading Bot.runtimeconfig.json
+C:\Users\Sylas Coker\source\repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Trading Bot.runtimeconfig.dev.json
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Trading Bot.dll
+C:\Users\Sylas Coker\source\repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\ref\Trading Bot.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Trading Bot.pdb
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\BouncyCastle.Crypto.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Coinbase.Pro.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Flurl.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Flurl.Http.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Google.Protobuf.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\K4os.Compression.LZ4.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\K4os.Compression.LZ4.Streams.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\K4os.Hash.xxHash.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\MySql.Data.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Ubiety.Dns.Core.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\ZstdNet.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\Newtonsoft.Json.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\RestSharp.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\SuperSocket.ClientEngine.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\System.Configuration.ConfigurationManager.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\System.Data.SqlClient.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\System.Drawing.Common.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\System.Security.Permissions.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\System.Windows.Extensions.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\WebSocket4Net.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\win-arm64\native\sni.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\win-x64\native\sni.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\win-x86\native\sni.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\unix\lib\netcoreapp2.1\System.Data.SqlClient.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.csproj.AssemblyReference.cache
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading_Bot.Properties.Resources.resources
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.csproj.GenerateResource.cache
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.AssemblyInfoInputs.cache
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.AssemblyInfo.cs
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.csproj.CoreCompileInputs.cache
+C:\Users\Sylas Coker\source\repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.csproj.CopyComplete
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\ref\Trading Bot.dll
+C:\Users\Sylas Coker\Source\Repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.pdb
+C:\Users\Sylas Coker\source\repos\Syycoker\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0\Trading Bot.genruntimeconfig.cache

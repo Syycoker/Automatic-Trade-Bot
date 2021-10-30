@@ -99,9 +99,9 @@ namespace Trading_Bot
     /// Returns all trades within 'automatedtradingdb' from the'Trades' Table.
     /// </summary>
     /// <returns></returns>
-    public List<Trade> GetAllTrades()
+    public List<PTrade> GetAllTrades()
     {
-      List<Trade> trades = new();
+      List<PTrade> trades = new();
 
       MySqlCommand command = DatabaseConfig.Connection.CreateCommand();
       try
@@ -116,7 +116,7 @@ namespace Trading_Bot
           MySqlDataReader reader = command.ExecuteReader();
           while (reader.Read())
           {
-            Trade trade = new((int)reader[DatabaseConfig.Product_Id], (decimal)reader[DatabaseConfig.Price], (DateTime)reader[DatabaseConfig.Date_Time], (string)reader[DatabaseConfig.Product_Name], (char)reader[DatabaseConfig.BuyOrSell], (decimal)reader[DatabaseConfig.Buy_Price], (decimal)reader[DatabaseConfig.Sell_Price]);
+            PTrade trade = new((int)reader[DatabaseConfig.Product_Id], (decimal)reader[DatabaseConfig.Price], (DateTime)reader[DatabaseConfig.Date_Time], (string)reader[DatabaseConfig.Product_Name], (char)reader[DatabaseConfig.BuyOrSell], (decimal)reader[DatabaseConfig.Buy_Price], (decimal)reader[DatabaseConfig.Sell_Price]);
 
             trades.Add(trade);
           }

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Trading_Bot
 {
@@ -14,35 +16,18 @@ namespace Trading_Bot
   public static class AuthenticationConfig
   {
     #region Constants
+
     /// <summary>
     /// The file address for the authentication file.
     /// </summary>
-    public const string Authentication_File = @"C:\Users\coker\Documents\TradingBotAssets\cb_authentication_file.txt";
+    public const string Authentication_File = "..\\..\\..\\Configuration Files\\UserAuthentication.xml";
 
-    /// <summary>
-    /// Dictionary accessor for the api key string.
-    /// </summary>
-    private const string Api_Key = "api_key";
+    public const string API_KEY = "API_KEY";
+    public const string API_SECRET = "API_SECRET";
+    public const string API_PASS = "API_PASSPHRASE";
+    public const string API_URL = "API_URL";
+    public const string SOCKET_URL = "SOCKET_URL";
 
-    /// <summary>
-    /// Dictionary accessor for the api secret string.
-    /// </summary>
-    private const string Api_Secret = "api_secret";
-
-    /// <summary>
-    /// Dictionary accessor for the api pass string.
-    /// </summary>
-    private const string Api_Pass = "api_pass";
-
-    /// <summary>
-    /// Dictionary accessor for the api url string.
-    /// </summary>
-    private const string Api_Url = "api_url";
-
-    /// <summary>
-    /// Dictionary accessor for the socket url string.
-    /// </summary>
-    private const string Socket_Url = "socket_url";
     #endregion
 
     #region Public
@@ -57,114 +42,19 @@ namespace Trading_Bot
     private const string FAIL = "Failed Operation.";
 
     /// <summary>
-    /// Private api key.
-    /// </summary>
-    private static string api_key = string.Empty;
-
-    /// <summary>
-    /// Public api key.
-    /// </summary>
-    public static string API_KEY
-    {
-      get => api_key;
-      set
-      {
-        if (value == null || value == string.Empty) { return; }
-
-        api_key = value;
-        Console.WriteLine("Succesfully initialised {0}.", Api_Key);
-      }
-    }
-
-    /// <summary>
-    /// Private api secret.
-    /// </summary>
-    private static string api_secret = string.Empty;
-
-    /// <summary>
-    /// Public api secret.
-    /// </summary>
-    public static string API_SECRET
-    {
-      get => api_secret;
-      set
-      {
-        if (value == null || value == string.Empty) { return; }
-
-        api_secret = value;
-        Console.WriteLine("Succesfully initialised {0}.", Api_Secret);
-      }
-    }
-
-    /// <summary>
-    /// Private api pass.
-    /// </summary>
-    private static string api_pass = string.Empty;
-
-    /// <summary>
-    /// Public api pass.
-    /// </summary>
-    public static string API_PASS
-    {
-      get => api_pass;
-      set
-      {
-        if (value == null || value == string.Empty) { return; }
-
-        api_pass = value;
-        Console.WriteLine("Succesfully initialised {0}.", Api_Pass);
-      }
-    }
-
-    /// <summary>
-    /// Private api url.
-    /// </summary>
-    private static string api_url = string.Empty;
-
-    /// <summary>
-    /// Public api url.
-    /// </summary>
-    public static string API_URL
-    {
-      get => api_url;
-      set
-      {
-        if (value == null || value == string.Empty) { return; }
-
-        api_url = value;
-        Console.WriteLine("Succesfully initialised {0}.", Api_Url);
-      }
-    }
-
-    /// <summary>
-    /// Private socket url.
-    /// </summary>
-    private static string socket_url = string.Empty;
-
-    /// <summary>
-    /// Public socket url.
-    /// </summary>
-    public static string SOCKET_URL
-    {
-      get => socket_url;
-      set
-      {
-        if (value == null || value == string.Empty) { return; }
-
-        socket_url = value;
-        Console.WriteLine("Succesfully initialised {0}.", Socket_Url);
-      }
-    }
-
-    /// <summary>
     ///  Checks if Authentication Config has been initialised.
     /// </summary>
     public static bool Initialised { get; set; }
 
     /// <summary>
+    /// Check if you want to trade using the sandbox api url or not.
+    /// </summary>
+    public static bool Sandbox { get; set; }
+
+    /// <summary>
     /// Storage to hold the 'secret' , 'key' and 'pass'.
     /// </summary>
-    private static Dictionary<string, string> Authentication = new();
+    public static Dictionary<string, string> Authentication = new();
     #endregion
 
     #region Initialisation
@@ -176,35 +66,76 @@ namespace Trading_Bot
     {
       try
       {
+        Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("Reading authentication file...");
 
         // Try and open a file with credentials.
-        string[] parsedFile = File.ReadAllLines(Authentication_File);
+        //string parsedFile = File.ReadAllLines(Authentication_File);
+        XmlDocument doc = new();
+        doc.Load(Authentication_File);
+        XmlElement docElement = doc.DocumentElement;
 
-        foreach (string line in parsedFile)
+        foreach (XmlNode node in docElement.ChildNodes)
         {
-          try
+          #region Sandbox
+          if (Sandbox)
           {
-            string[] temp = Seperate(line);
-
-            Authentication.Add(temp[0], temp[1]);
+            if (node.Name.Equals("Sandbox"))
+            {
+              foreach (XmlNode childNode in node.ChildNodes)
+              {
+                switch (childNode.Name)
+                {
+                  case "AUTH_KEY":
+                    Authentication.Add(API_KEY, childNode.Attributes["value"].Value);
+                    break;
+                  case "AUTH_SECRET":
+                    Authentication.Add(API_SECRET, childNode.Attributes["value"].Value);
+                    break;
+                  case "AUTH_PASSPHRASE":
+                    Authentication.Add(API_PASS, childNode.Attributes["value"].Value);
+                    break;
+                  case "AUTH_URL":
+                    Authentication.Add(API_URL, childNode.Attributes["value"].Value);
+                    break;
+                  case "SOCKET_URL":
+                    Authentication.Add(SOCKET_URL, childNode.Attributes["value"].Value);
+                    break;
+                }
+              }
+            }
           }
-          catch (NullReferenceException)
+          #endregion
+          #region Non Sandbox
+          else
           {
-            Console.WriteLine("Unable to get either index 0, or index 1 from seperated line. Invalid sequence.");
-            return false;
+            if (node.Name.Equals("Sandbox"))
+            {
+              foreach (XmlNode childNode in node.ChildNodes)
+              {
+                switch (childNode.Name)
+                {
+                  case "AUTH_KEY":
+                    Authentication.Add(API_KEY, childNode.Attributes["value"].Value);
+                    break;
+                  case "AUTH_SECRET":
+                    Authentication.Add(API_SECRET, childNode.Attributes["value"].Value);
+                    break;
+                  case "AUTH_PASSPHRASE":
+                    Authentication.Add(API_PASS, childNode.Attributes["value"].Value);
+                    break;
+                }
+              }
+            }
           }
+          #endregion
         }
+
 
         // By this stage we assume the autentication dictionary is now loaded and valid.
         // Now check if there's exactly 5 key value pairs, if so, successful, else, unsuccessful.
-
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Checking Authorisation keys...");
-
-        // Set the authentication keys.
-        SetAuthenticionKeys();
-
-        if (Authentication.Count == 5) { Initialised = true; Console.WriteLine(SUCCESS); } else { Initialised = false; Console.WriteLine(FAIL); }
 
         Console.WriteLine("Authentication Initialised.");
         Console.WriteLine("-------------------------------------------------------------------------\n");
@@ -213,6 +144,7 @@ namespace Trading_Bot
       }
       catch (Exception e)
       {
+        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("Invalid file path.");
         Console.WriteLine("Failed Establishing Connection...");
 
@@ -239,34 +171,6 @@ namespace Trading_Bot
       string[] dict = str.Trim().Split('~');
 
       return dict;
-    }
-
-    /// <summary>
-    /// Set all the authentication variables.
-    /// </summary>
-    private static void SetAuthenticionKeys()
-    {
-      try
-      {
-        API_KEY = Authentication[Api_Key];
-
-        API_SECRET = Authentication[Api_Secret];
-
-        API_PASS = Authentication[Api_Pass];
-
-        API_URL = Authentication[Api_Url];
-
-        SOCKET_URL = Authentication[Socket_Url];
-
-        // Successful initialisation of authentication config.
-        Console.WriteLine(SUCCESS + " - Authentication Configuration succesfully initialised.");
-      }
-      catch (Exception)
-      {
-        // Failed initialisation of authentication config.
-        Console.WriteLine(FAIL + " - Authentication Configuration  failed initialisation, please restart.");
-        throw;
-      }
     }
 
     #endregion

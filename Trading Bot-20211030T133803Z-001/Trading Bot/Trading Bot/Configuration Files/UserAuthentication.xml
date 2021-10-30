@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Authentication>
+	<Sandbox>
+		<AUTH_KEY value ="mHOweBayGmuwUUk5"/>
+		<AUTH_SECRET value ="DaI8QnVr8v5c9Z00SqMrZxBq2yv2vAQV"/>
+		<AUTH_PASSPHRASE value ="ddtt1viqijw"/>
+		<AUTH_URL value ="https://api-public.sandbox.exchange.coinbase.com"/>
+		<SOCKET_URL value="wss://ws-feed-public.sandbox.pro.coinbase.com"/>
+	</Sandbox>
+	<Non_Sandbox>
+		<AUTH_KEY value ="mHOweBayGmuwUUk5"/>
+		<AUTH_SECRET value ="ddtt1viqijw"/>
+		<AUTH_PASSPHRASE value ="DaI8QnVr8v5c9Z00SqMrZxBq2yv2vAQV"/>
+	</Non_Sandbox>
+</Authentication>

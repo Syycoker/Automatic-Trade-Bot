@@ -44,11 +44,12 @@ namespace Trading_Bot
     {
       try
       {
+        AuthenticationConfig.Sandbox = true;
         // Initialise the authorisation codes.
         AuthenticationConfig.Initialise();
 
         // Initialise the database.
-        DatabaseConfig.Initialise();
+        //DatabaseConfig.Initialise();
 
         // Initialise the database.
         ClientConfig.Initialise();
@@ -56,6 +57,8 @@ namespace Trading_Bot
         // Initialise the database.
         SocketConfig.Initialise();
 
+        Console.ForegroundColor = ConsoleColor.White;
+        /*
         var client = new RestClient("https://api.exchange.coinbase.com/accounts");
         var request = new RestRequest(Method.GET);
         request.AddHeader("Accept", "application/json");
@@ -63,26 +66,38 @@ namespace Trading_Bot
         request.AddHeader("cb-access-passphrase", "ddtt1viqijw");
         request.AddHeader("cb-access-sign", "DaI8QnVr8v5c9Z00SqMrZxBq2yv2vAQV");
         IRestResponse response = client.Execute(request);
+        */
+        /*
+         while (true)
+         {
+             // Find all available coins to trade
+             List<string> AvailableCoins = await FindAvailableCoins();
 
-        while (true)
+             // Let's connect to the CoinBase Live data whatever it's called.
+
+             Console.WriteLine("Configuring live view of selected crypto...");
+             ViewPerformance();
+
+             Console.WriteLine("Initiating web feed view...");
+             InitiateWebSocket();
+
+             Console.ReadKey();
+           }).GetAwaiter().GetResult();
+         } */
+        PagedResponse<Coinbase.Pro.Models.Trade> sum = null;
+
+        Task.Run(async () =>
         {
-          Task.Run(async () =>
-          {
-            // Find all available coins to trade
-            List<string> AvailableCoins = await FindAvailableCoins();
+          sum = await Client.MarketData.GetTradesAsync("BTC-USD");
+          Console.WriteLine(sum.Message);
+        }).GetAwaiter().GetResult();
 
-            // Let's connect to the CoinBase Live data whatever it's called.
-
-            Console.WriteLine("Configuring live view of selected crypto...");
-            ViewPerformance();
-
-            Console.WriteLine("Initiating web feed view...");
-            InitiateWebSocket();
-
-            Console.ReadKey();
-          }).GetAwaiter().GetResult();
+        foreach (var item in sum.Data)
+        {
+          Console.WriteLine(item.Side);
         }
       }
+
       catch (Exception e)
       {
         Console.WriteLine(e.Message);
@@ -143,7 +158,8 @@ namespace Trading_Bot
     /// </summary>
     private async static void BuyCoin()
     {
-
+      // Get how much I currently have
+      //await Client.Orders.PlaceLimitOrderAsync(OrderSide.Buy, "SHIB-BTC", limitPrice: 1, GoodTillTime.Day);
     }
 
     /// <summary>

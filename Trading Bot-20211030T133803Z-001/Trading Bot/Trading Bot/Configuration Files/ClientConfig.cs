@@ -15,20 +15,22 @@ namespace Trading_Bot.Configuration_Files
     {
       try
       {
+        Console.ForegroundColor = ConsoleColor.White;
         // Instantiate a Coinbase Pro Object using the now initialised Authentication.
 
         Console.WriteLine("Creating a client object...");
 
         AutomatedTradeBot.Client = new CoinbaseProClient(new Config
         {
-          ApiKey = AuthenticationConfig.API_KEY,
-          Secret = AuthenticationConfig.API_SECRET,
-          Passphrase = AuthenticationConfig.API_PASS,
-          ApiUrl = AuthenticationConfig.API_URL
+          ApiKey = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY],
+          Secret = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET],
+          Passphrase = AuthenticationConfig.Authentication[AuthenticationConfig.API_PASS],
+          ApiUrl = AuthenticationConfig.Authentication[AuthenticationConfig.API_URL]
         });
 
         if (AutomatedTradeBot.Client == null) { throw new Exception("Client is null or invalid."); }
 
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Client successfully Initialised.");
         Console.WriteLine("-------------------------------------------------------------------------\n");
 
@@ -37,6 +39,7 @@ namespace Trading_Bot.Configuration_Files
       }
       catch (Exception e)
       {
+        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(e.Message);
         Initialised = false;
         // Failed initialisation of authentication config.

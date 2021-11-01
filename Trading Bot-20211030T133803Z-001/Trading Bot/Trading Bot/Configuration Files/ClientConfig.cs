@@ -25,9 +25,10 @@ namespace Trading_Bot.Configuration_Files
           ApiKey = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY],
           Secret = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET],
           Passphrase = AuthenticationConfig.Authentication[AuthenticationConfig.API_PASS],
-          ApiUrl = AuthenticationConfig.Authentication[AuthenticationConfig.API_URL]
         });
 
+
+        AutomatedTradeBot.Client.Config.EnsureValid();
         if (AutomatedTradeBot.Client == null) { throw new Exception("Client is null or invalid."); }
 
         Console.ForegroundColor = ConsoleColor.Green;

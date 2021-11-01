@@ -44,7 +44,9 @@ namespace Trading_Bot
     {
       try
       {
-        AuthenticationConfig.Sandbox = true;
+        AuthenticationConfig.Sandbox = false;
+        Console.WriteLine("Sandbox is currently active : {0}.", AuthenticationConfig.Sandbox);
+
         // Initialise the authorisation codes.
         AuthenticationConfig.Initialise();
 
@@ -84,18 +86,17 @@ namespace Trading_Bot
              Console.ReadKey();
            }).GetAwaiter().GetResult();
          } */
-        PagedResponse<Coinbase.Pro.Models.Trade> sum = null;
 
         Task.Run(async () =>
         {
-          sum = await Client.MarketData.GetTradesAsync("BTC-USD");
-          Console.WriteLine(sum.Message);
-        }).GetAwaiter().GetResult();
 
-        foreach (var item in sum.Data)
-        {
-          Console.WriteLine(item.Side);
-        }
+          foreach (var item in BuyCoin().Result)
+          {
+            Console.WriteLine(item.Name);
+            Console.WriteLine();
+          }
+
+        }).GetAwaiter().GetResult();
       }
 
       catch (Exception e)
@@ -110,21 +111,15 @@ namespace Trading_Bot
     /// <summary>
     /// Returns an enumarable collection of coins that can be bought / traded for at *this* very moment.
     /// </summary>
-    private static async Task<List<string>> FindAvailableCoins()
+    private static async Task<List<Order>> FindAvailableCoins()
     {
       try
       {
         await Semaphore.WaitAsync();
 
-        var client = new RestClient("https://api.exchange.coinbase.com/products");
+        var orders = await Client.Orders.GetAllOrdersAsync();
 
-        var request = new RestRequest(Method.GET);
-
-        request.AddHeader("Accept", "application/json");
-
-        IRestResponse response = client.Execute(request);
-
-        return null;
+        return orders.Data;
       }
       catch (Exception e)
       {
@@ -156,10 +151,12 @@ namespace Trading_Bot
     /// <summary>
     /// If returned a decent - good 'AnalysisEval', then buy coin, else continue in loop.
     /// </summary>
-    private async static void BuyCoin()
+    private async static Task<List<PaymentMethod>> BuyCoin()
     {
       // Get how much I currently have
       //await Client.Orders.PlaceLimitOrderAsync(OrderSide.Buy, "SHIB-BTC", limitPrice: 1, GoodTillTime.Day);
+
+      return await Client.PaymentMethods.GetAllPaymentMethodsAsync();
     }
 
     /// <summary>

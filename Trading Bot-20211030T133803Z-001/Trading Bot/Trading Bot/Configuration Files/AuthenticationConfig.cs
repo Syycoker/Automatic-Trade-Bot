@@ -124,6 +124,9 @@ namespace Trading_Bot
                   case "AUTH_PASSPHRASE":
                     Authentication.Add(API_PASS, childNode.Attributes["value"].Value);
                     break;
+                  case "SOCKET_URL":
+                    Authentication.Add(SOCKET_URL, childNode.Attributes["value"].Value);
+                    break;
                 }
               }
             }

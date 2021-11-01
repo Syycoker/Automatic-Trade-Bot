@@ -21,13 +21,14 @@ namespace Trading_Bot
     /// <summary>
     /// Determines how well a stock is doing now comapred to last buy time.
     /// </summary>
-    public static void PastPerformance()
+    public static async void PastPerformance(string productId)
     {
       // All criteria is ran through the basis of a threshold.
 
       // If the coin's price is greater than its last buy price, sell.
       // If the coin's price has not changed in the past hour or so, sell.
       // If the coin's price is less than its last buy price, sell.
+      
     }
     
   }

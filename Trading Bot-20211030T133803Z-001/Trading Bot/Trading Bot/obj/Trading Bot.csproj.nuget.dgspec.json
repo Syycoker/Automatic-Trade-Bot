@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Sylas Coker\\Source\\Repos\\Syycoker\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj": {}
+    "C:\\Users\\Sylas Coker\\Source\\Repos\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Sylas Coker\\Source\\Repos\\Syycoker\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj": {
+    "C:\\Users\\Sylas Coker\\Source\\Repos\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Sylas Coker\\Source\\Repos\\Syycoker\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
+        "projectUniqueName": "C:\\Users\\Sylas Coker\\Source\\Repos\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
         "projectName": "Trading Bot",
-        "projectPath": "C:\\Users\\Sylas Coker\\Source\\Repos\\Syycoker\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
+        "projectPath": "C:\\Users\\Sylas Coker\\Source\\Repos\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
         "packagesPath": "C:\\Users\\Sylas Coker\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Sylas Coker\\Source\\Repos\\Syycoker\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\obj\\",
+        "outputPath": "C:\\Users\\Sylas Coker\\Source\\Repos\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Sylas Coker\\AppData\\Roaming\\NuGet\\NuGet.Config",

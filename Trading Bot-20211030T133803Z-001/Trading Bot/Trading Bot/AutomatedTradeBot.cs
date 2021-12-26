@@ -13,7 +13,7 @@ using RestSharp;
 
 namespace Trading_Bot
 {
-  class AutomatedTradeBot
+  public class AutomatedTradeBot
   {
     #region Constants
     /// <summary>
@@ -59,37 +59,15 @@ namespace Trading_Bot
         // Initialise the database.
         SocketConfig.Initialise();
 
+        var accounts = Client.CoinbaseAccounts;
+
         Console.ForegroundColor = ConsoleColor.White;
-        /*
-        var client = new RestClient("https://api.exchange.coinbase.com/accounts");
-        var request = new RestRequest(Method.GET);
-        request.AddHeader("Accept", "application/json");
-        request.AddHeader("cb-access-key", "mHOweBayGmuwUUk5");
-        request.AddHeader("cb-access-passphrase", "ddtt1viqijw");
-        request.AddHeader("cb-access-sign", "DaI8QnVr8v5c9Z00SqMrZxBq2yv2vAQV");
-        IRestResponse response = client.Execute(request);
-        */
-        /*
-         while (true)
-         {
-             // Find all available coins to trade
-             List<string> AvailableCoins = await FindAvailableCoins();
-
-             // Let's connect to the CoinBase Live data whatever it's called.
-
-             Console.WriteLine("Configuring live view of selected crypto...");
-             ViewPerformance();
-
-             Console.WriteLine("Initiating web feed view...");
-             InitiateWebSocket();
-
-             Console.ReadKey();
-           }).GetAwaiter().GetResult();
-         } */
-
+       
         Task.Run(async () =>
         {
 
+          var account = await accounts.GetAllAccountsAsync();
+          Console.WriteLine(account[0].Name);
           foreach (var item in BuyCoin().Result)
           {
             Console.WriteLine(item.Name);
@@ -101,6 +79,8 @@ namespace Trading_Bot
 
       catch (Exception e)
       {
+        // Senda push notification to phone if any error arises.
+        // Restart program again if application closes...
         Console.WriteLine(e.Message);
         Console.ReadKey();
       }
@@ -175,12 +155,8 @@ namespace Trading_Bot
     /// <param name="crypto"></param>
     private static async void ViewPerformance()
     {
-
       try
       {
-        // No idea what this even does???
-        //client.EnableFiddlerDebugProxy("http://localhost.:8888");
-
         var products = await Client.MarketData.GetProductsAsync();
         var productIds = products.Select(p => p.Id).ToArray();
         Console.WriteLine(">> Available Product IDs:");

@@ -7,6 +7,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Security.Cryptography;
+using System.ComponentModel;
+using System.Net.Http;
+using Trading_Bot.Configuration_Files;
+using Newtonsoft.Json.Linq;
 
 namespace Trading_Bot
 {
@@ -20,7 +25,7 @@ namespace Trading_Bot
     /// <summary>
     /// The file address for the authentication file.
     /// </summary>
-    public const string Authentication_File = "..\\..\\..\\Configuration Files\\UserAuthentication.xml";
+    public const string Authentication_File = @"C:\Users\Sylas Coker\Desktop\UserAuthentication.xml";
 
     public const string API_KEY = "API_KEY";
     public const string API_SECRET = "API_SECRET";
@@ -55,6 +60,11 @@ namespace Trading_Bot
     /// Storage to hold the 'secret' , 'key' and 'pass'.
     /// </summary>
     public static Dictionary<string, string> Authentication = new();
+
+    /// <summary>
+    /// A JSON object that represents an authenticated user.
+    /// </summary>
+    public static string JSONObject = string.Empty;
     #endregion
 
     #region Initialisation
@@ -109,7 +119,7 @@ namespace Trading_Bot
           #region Non Sandbox
           else
           {
-            if (node.Name.Equals("Sandbox"))
+            if (node.Name.Equals("Non_Sandbox"))
             {
               foreach (XmlNode childNode in node.ChildNodes)
               {
@@ -139,6 +149,42 @@ namespace Trading_Bot
         // Now check if there's exactly 5 key value pairs, if so, successful, else, unsuccessful.
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Checking Authorisation keys...");
+        string url = @"https://api.coinbase.com/v2/";
+        DateTime start = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        TimeSpan end = DateTime.Now.ToUniversalTime() - start;
+        var timestamp = (long)Math.Floor(end.TotalSeconds);
+
+        string signature = GenerateSignature(timestamp.ToString(), "GET", url, "");
+        var request = new HttpRequestMessage
+        {
+          RequestUri = new Uri(url),
+          Method = HttpMethod.Get,
+          Headers =
+                {
+                    { "CB-ACCESS-KEY", Authentication[API_KEY] },
+                    { "CB-ACCESS-SIGN", signature },
+                    { "CB-ACCESS-TIMESTAMP", timestamp.ToString() },
+                },
+        };
+        HttpClient httpClient = new HttpClient();
+        HttpResponseMessage response = httpClient.SendAsync(request).Result;
+        HttpContent responseContent = response.Content;
+        string resultsString = string.Empty;
+
+        using (var reader = new StreamReader(responseContent.ReadAsStreamAsync().Result))
+        {
+          // Write the output.
+          resultsString = reader.ReadToEndAsync().Result;
+        }
+        if (resultsString != null)
+        {
+          //get the json result and go down one level and update the result
+          JObject coinDataJSON = JObject.Parse(resultsString);
+          string jsonDataObject = coinDataJSON.GetValue("data").ToString();
+          coinDataJSON = JObject.Parse(jsonDataObject);
+        }
+        Console.WriteLine();
+
 
         Console.WriteLine("Authentication Initialised.");
         Console.WriteLine("-------------------------------------------------------------------------\n");
@@ -155,6 +201,10 @@ namespace Trading_Bot
         Initialised = false;
         // Failed initialisation of authentication config.
         throw new Exception("Authentication Configuration failed initialisation.");
+      }
+      finally
+      {
+        Console.ForegroundColor = ConsoleColor.White;
       }
     }
 
@@ -174,6 +224,18 @@ namespace Trading_Bot
       string[] dict = str.Trim().Split('~');
 
       return dict;
+    }
+
+    public static string GenerateSignature(string timestamp, string method, string url, string body)
+    {
+      return ComputeHash(timestamp + method + url + body);
+    }
+
+    public static string ComputeHash(string message)
+    {
+      HMACSHA256 hmac = new HMACSHA256(Encoding.ASCII.GetBytes(Authentication[API_KEY]));
+      byte[] hashedMessage = hmac.ComputeHash(Encoding.ASCII.GetBytes(message));
+      return Convert.ToBase64String(hashedMessage);
     }
 
     #endregion

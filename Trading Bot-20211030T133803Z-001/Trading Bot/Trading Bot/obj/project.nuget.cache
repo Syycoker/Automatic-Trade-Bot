@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "DYq6ZtkYEQyIEMKefwoGzuo2fW4W1YJqcDvE/pnrbvEw/yH9X2EPNf5erG4gN04nJHdtV69xNgLcITdvafosWg==",
+  "dgSpecHash": "9wqiwArEwaIdZHuvUW14KGxRgPpBUhBPEfWVTR52fiYdBBmlPelvDjqlDfhhr82x+9oqileU4tRjl0Lv0H8y7w==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Sylas Coker\\Source\\Repos\\Syycoker\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
+  "projectFilePath": "C:\\Users\\Sylas Coker\\Source\\Repos\\Automatic-Trade-Bot\\Trading Bot-20211030T133803Z-001\\Trading Bot\\Trading Bot\\Trading Bot.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Sylas Coker\\.nuget\\packages\\bouncycastle.netcore\\1.8.5\\bouncycastle.netcore.1.8.5.nupkg.sha512",
     "C:\\Users\\Sylas Coker\\.nuget\\packages\\coinbase.pro\\4.1.3\\coinbase.pro.4.1.3.nupkg.sha512",

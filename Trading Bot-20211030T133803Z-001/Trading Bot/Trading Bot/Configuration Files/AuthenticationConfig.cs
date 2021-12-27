@@ -60,11 +60,6 @@ namespace Trading_Bot
     /// Storage to hold the 'secret' , 'key' and 'pass'.
     /// </summary>
     public static Dictionary<string, string> Authentication = new();
-
-    /// <summary>
-    /// A JSON object that represents an authenticated user.
-    /// </summary>
-    public static string JSONObject = string.Empty;
     #endregion
 
     #region Initialisation
@@ -144,48 +139,12 @@ namespace Trading_Bot
           #endregion
         }
 
-
         // By this stage we assume the autentication dictionary is now loaded and valid.
         // Now check if there's exactly 5 key value pairs, if so, successful, else, unsuccessful.
-        Console.ForegroundColor = ConsoleColor.Green;
+        Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("Checking Authorisation keys...");
-        string url = @"https://api.coinbase.com/v2/";
-        DateTime start = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        TimeSpan end = DateTime.Now.ToUniversalTime() - start;
-        var timestamp = (long)Math.Floor(end.TotalSeconds);
-
-        string signature = GenerateSignature(timestamp.ToString(), "GET", url, "");
-        var request = new HttpRequestMessage
-        {
-          RequestUri = new Uri(url),
-          Method = HttpMethod.Get,
-          Headers =
-                {
-                    { "CB-ACCESS-KEY", Authentication[API_KEY] },
-                    { "CB-ACCESS-SIGN", signature },
-                    { "CB-ACCESS-TIMESTAMP", timestamp.ToString() },
-                },
-        };
-        HttpClient httpClient = new HttpClient();
-        HttpResponseMessage response = httpClient.SendAsync(request).Result;
-        HttpContent responseContent = response.Content;
-        string resultsString = string.Empty;
-
-        using (var reader = new StreamReader(responseContent.ReadAsStreamAsync().Result))
-        {
-          // Write the output.
-          resultsString = reader.ReadToEndAsync().Result;
-        }
-        if (resultsString != null)
-        {
-          //get the json result and go down one level and update the result
-          JObject coinDataJSON = JObject.Parse(resultsString);
-          string jsonDataObject = coinDataJSON.GetValue("data").ToString();
-          coinDataJSON = JObject.Parse(jsonDataObject);
-        }
-        Console.WriteLine();
-
-
+        // Example
+        // var jsonObject = GetResponse(@"https://api.coinbase.com/v2/exchange-rates?currency=USD");
         Console.WriteLine("Authentication Initialised.");
         Console.WriteLine("-------------------------------------------------------------------------\n");
 
@@ -210,6 +169,65 @@ namespace Trading_Bot
 
     #endregion
 
+    #region Methods
+    /// <summary>
+    /// Wrapper to get any request using a uri to return a JSON Object.
+    /// </summary>
+    /// <param name="uri"></param>
+    /// <returns></returns>
+    public static async Task<JObject> GetResponse(string uri)
+    {
+      try
+      {
+        DateTime start = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        TimeSpan end = DateTime.Now.ToUniversalTime() - start;
+        var timestamp = (long)Math.Floor(end.TotalSeconds);
+
+        var message = timestamp + "GET" + uri + "";
+
+        string signature = ComputeHash(message);
+
+        var request = new HttpRequestMessage
+        {
+          RequestUri = new Uri(uri),
+          Method = HttpMethod.Get,
+          Headers =
+                {
+                  { "CB-ACCESS-SIGN", signature },
+                  { "CB-ACCESS-TIMESTAMP", timestamp.ToString() },
+                  { "CB-ACCESS-KEY", Authentication[API_KEY] },
+                },
+        };
+
+        HttpClient httpClient = new HttpClient();
+        HttpResponseMessage response = await httpClient.SendAsync(request);
+        HttpContent responseContent = response.Content;
+        string resultsString = string.Empty;
+
+        using (var reader = new StreamReader(responseContent.ReadAsStreamAsync().Result))
+        {
+          // Write the output.
+          resultsString = reader.ReadToEndAsync().Result;
+        }
+
+        if (resultsString == null) { throw new Exception("Result String was empty."); }
+
+        //get the json result and go down one level and update the result
+        JObject json = JObject.Parse(resultsString);
+
+        return json;
+      }
+      catch
+      {
+        return null;
+      }
+      finally
+      {
+        Console.ForegroundColor = ConsoleColor.White;
+      }
+    }
+    #endregion
+
     #region Private
 
     /// <summary>
@@ -226,14 +244,9 @@ namespace Trading_Bot
       return dict;
     }
 
-    public static string GenerateSignature(string timestamp, string method, string url, string body)
+    private static string ComputeHash(string message)
     {
-      return ComputeHash(timestamp + method + url + body);
-    }
-
-    public static string ComputeHash(string message)
-    {
-      HMACSHA256 hmac = new HMACSHA256(Encoding.ASCII.GetBytes(Authentication[API_KEY]));
+      HMACSHA256 hmac = new HMACSHA256(Encoding.ASCII.GetBytes(Authentication[API_SECRET]));
       byte[] hashedMessage = hmac.ComputeHash(Encoding.ASCII.GetBytes(message));
       return Convert.ToBase64String(hashedMessage);
     }

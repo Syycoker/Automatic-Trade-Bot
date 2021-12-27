@@ -23,8 +23,7 @@ namespace Trading_Bot.Configuration_Files
         AutomatedTradeBot.Client = new CoinbaseProClient(new Config
         {
           ApiKey = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY],
-          Secret = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET],
-          Passphrase = AuthenticationConfig.Authentication[AuthenticationConfig.API_PASS],
+          Secret = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET]
         });
 
 

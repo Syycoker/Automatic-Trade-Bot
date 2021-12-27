@@ -65,7 +65,8 @@ namespace Trading_Bot
        
         Task.Run(async () =>
         {
-
+          var test = await AuthenticationConfig.GetResponse(@"https://api.coinbase.com/v2/accounts/:account_id");
+          Console.WriteLine(test);
           var account = await accounts.GetAllAccountsAsync();
           Console.WriteLine(account[0].Name);
           foreach (var item in BuyCoin().Result)

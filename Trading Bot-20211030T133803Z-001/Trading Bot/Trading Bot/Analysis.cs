@@ -18,6 +18,19 @@ namespace Trading_Bot
     /// The '+ / -' percentage of the coin's buy / sell limit.
     /// </summary>
     public static double Threshold { get; private set; }
+
+    public static AnalysisEval EvaluateCoinHistory(string coin, string uri)
+    {
+      try
+      {
+        var jsonObject = AuthenticationConfig.GetResponse(uri);
+        return AnalysisEval.NONE;
+      }
+      catch
+      {
+        return AnalysisEval.NONE;
+      }
+    }
     
   }
 }

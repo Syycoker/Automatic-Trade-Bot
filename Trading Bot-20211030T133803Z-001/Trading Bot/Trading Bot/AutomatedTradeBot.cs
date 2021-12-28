@@ -25,11 +25,14 @@ namespace Trading_Bot
     /// Returns an failed constant string.
     /// </summary>
     public const string FAIL = "Failed Operation.";
+
+    public const string URL_BASE = "https://api.coinbase.com/v2/";
     #endregion
 
     #region Initialised Object
-    public static CoinbaseProClient Client { get; set; }
-    public static CoinbaseProWebSocket WebSocket { get; set; }
+    public static CoinbaseClient Client { get; set; }
+    public static CoinbaseProClient ProClient { get; set; }
+    public static CoinbaseProWebSocket ProWebSocket { get; set; }
     #endregion
 
     #region Thread Safety
@@ -59,22 +62,17 @@ namespace Trading_Bot
         // Initialise the database.
         SocketConfig.Initialise();
 
-        var accounts = Client.CoinbaseAccounts;
-
         Console.ForegroundColor = ConsoleColor.White;
        
         Task.Run(async () =>
         {
-          var test = await AuthenticationConfig.GetResponse(@"https://api.coinbase.com/v2/accounts/:account_id");
-          Console.WriteLine(test);
-          var account = await accounts.GetAllAccountsAsync();
-          Console.WriteLine(account[0].Name);
-          foreach (var item in BuyCoin().Result)
-          {
-            Console.WriteLine(item.Name);
-            Console.WriteLine();
-          }
+          var response = await Client.Data.GetSpotPriceAsync("ETH-USD");
+          var accounts = await Client.Accounts.ListAccountsAsync();
 
+          var responseTest = ClientConfig.JsonRequest(@"https://api.coinbase.com/v2/users/:user_id", "GET");
+
+          Console.WriteLine("Hi.");
+          
         }).GetAwaiter().GetResult();
       }
 
@@ -92,15 +90,17 @@ namespace Trading_Bot
     /// <summary>
     /// Returns an enumarable collection of coins that can be bought / traded for at *this* very moment.
     /// </summary>
-    private static async Task<List<Order>> FindAvailableCoins()
+    private static async Task<List<PTrade>> FindPositiveCoins()
     {
       try
       {
+        // Find all coins that have an 'AnalysisEval' of 5 or higher that have a positive trend.
+        // 
         await Semaphore.WaitAsync();
 
-        var orders = await Client.Orders.GetAllOrdersAsync();
-
-        return orders.Data;
+        var orders = await ProClient.Orders.GetAllOrdersAsync();
+        // Sort each pTrade by their analysis eval
+        return null;
       }
       catch (Exception e)
       {
@@ -137,7 +137,7 @@ namespace Trading_Bot
       // Get how much I currently have
       //await Client.Orders.PlaceLimitOrderAsync(OrderSide.Buy, "SHIB-BTC", limitPrice: 1, GoodTillTime.Day);
 
-      return await Client.PaymentMethods.GetAllPaymentMethodsAsync();
+      return await ProClient.PaymentMethods.GetAllPaymentMethodsAsync();
     }
 
     /// <summary>
@@ -146,6 +146,11 @@ namespace Trading_Bot
     private async static void SellCoin()
     {
 
+    }
+
+    public string GetUserAccountBalance(string id)
+    {
+      return ClientConfig.JsonRequest(URL_BASE + "accounts/" + id + "/balance", "GET");
     }
 
     #endregion
@@ -158,7 +163,7 @@ namespace Trading_Bot
     {
       try
       {
-        var products = await Client.MarketData.GetProductsAsync();
+        var products = await ProClient.MarketData.GetProductsAsync();
         var productIds = products.Select(p => p.Id).ToArray();
         Console.WriteLine(">> Available Product IDs:");
 
@@ -176,7 +181,7 @@ namespace Trading_Bot
         {
           selectedCrypto = Console.ReadLine();
 
-          data = await Client.MarketData.GetStatsAsync(selectedCrypto);
+          data = await ProClient.MarketData.GetStatsAsync(selectedCrypto);
 
           if (data == null) { Console.WriteLine("Invalid entry."); continue; }
 
@@ -203,7 +208,7 @@ namespace Trading_Bot
           decimal.TryParse(Console.ReadLine(), out amount);
 
 
-          PlaceAnOrder(Client, selectedCrypto, amount);
+          PlaceAnOrder(ProClient, selectedCrypto, amount);
         }
         else
         {
@@ -241,15 +246,15 @@ namespace Trading_Bot
     {
       Console.WriteLine(SUCCESS + " - Connecting to the websocket...");
 
-      var result = await WebSocket.ConnectAsync();
+      var result = await ProWebSocket.ConnectAsync();
 
       if (result.Success == false) { Console.WriteLine(FAIL + " - Unable to connect to wss://ws-feed-public.sandbox.pro.coinbase.com..."); return; }
 
       Console.WriteLine("Creating websocket event listeners...");
 
-      WebSocket.RawSocket.MessageReceived += HandleMessage;
-      WebSocket.RawSocket.Closed += HandleWebSocketClosed;
-      WebSocket.RawSocket.Error += HandleWebSocketError;
+      ProWebSocket.RawSocket.MessageReceived += HandleMessage;
+      ProWebSocket.RawSocket.Closed += HandleWebSocketClosed;
+      ProWebSocket.RawSocket.Error += HandleWebSocketError;
 
       var sub = new Subscription
       {
@@ -268,7 +273,7 @@ namespace Trading_Bot
       Console.WriteLine("Subscribing socket event...");
 
       // subscribe the event.
-      await WebSocket.SubscribeAsync(sub);
+      await ProWebSocket.SubscribeAsync(sub);
 
       Console.WriteLine("Waiting for data...");
 

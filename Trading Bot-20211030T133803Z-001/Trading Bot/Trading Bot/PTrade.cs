@@ -46,6 +46,11 @@ namespace Trading_Bot
     /// The price of the coin was sold for.
     /// </summary>
     public decimal Sell_Price { get; set; }
+
+    /// <summary>
+    /// The Analysis of the product's performance.
+    /// </summary>
+    public AnalysisEval Analysis { get; set; }
     #endregion
 
     #region Constructors
@@ -81,6 +86,12 @@ namespace Trading_Bot
       BuyOrSell = buyOrSell;
       Buy_Price = buy_Price;
       Sell_Price = sell_Price;
+    }
+
+    public PTrade(string product, AnalysisEval evaulation)
+    {
+      Product_Name = product;
+      Analysis = evaulation;
     }
     #endregion
   }

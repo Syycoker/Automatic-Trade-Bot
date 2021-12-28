@@ -100,3 +100,4 @@ C:\Users\Sylas Coker\Source\Repos\Automatic-Trade-Bot\Trading Bot-20211030T13380
 C:\Users\Sylas Coker\Source\Repos\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0-windows\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
 C:\Users\Sylas Coker\source\repos\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0-windows\Trading Bot.csproj.CopyComplete
 C:\Users\Sylas Coker\source\repos\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\obj\Debug\net5.0-windows\Trading Bot.genruntimeconfig.cache
+C:\Users\Sylas Coker\Source\Repos\Automatic-Trade-Bot\Trading Bot-20211030T133803Z-001\Trading Bot\Trading Bot\bin\Debug\net5.0-windows\Coinbase.dll

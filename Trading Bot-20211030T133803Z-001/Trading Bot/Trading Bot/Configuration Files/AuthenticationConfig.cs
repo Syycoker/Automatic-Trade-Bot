@@ -12,6 +12,9 @@ using System.ComponentModel;
 using System.Net.Http;
 using Trading_Bot.Configuration_Files;
 using Newtonsoft.Json.Linq;
+using System.Globalization;
+using Coinbase;
+using System.Net;
 
 namespace Trading_Bot
 {
@@ -71,6 +74,7 @@ namespace Trading_Bot
     {
       try
       {
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("Reading authentication file...");
 
@@ -169,65 +173,6 @@ namespace Trading_Bot
 
     #endregion
 
-    #region Methods
-    /// <summary>
-    /// Wrapper to get any request using a uri to return a JSON Object.
-    /// </summary>
-    /// <param name="uri"></param>
-    /// <returns></returns>
-    public static async Task<JObject> GetResponse(string uri)
-    {
-      try
-      {
-        DateTime start = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        TimeSpan end = DateTime.Now.ToUniversalTime() - start;
-        var timestamp = (long)Math.Floor(end.TotalSeconds);
-
-        var message = timestamp + "GET" + uri + "";
-
-        string signature = ComputeHash(message);
-
-        var request = new HttpRequestMessage
-        {
-          RequestUri = new Uri(uri),
-          Method = HttpMethod.Get,
-          Headers =
-                {
-                  { "CB-ACCESS-SIGN", signature },
-                  { "CB-ACCESS-TIMESTAMP", timestamp.ToString() },
-                  { "CB-ACCESS-KEY", Authentication[API_KEY] },
-                },
-        };
-
-        HttpClient httpClient = new HttpClient();
-        HttpResponseMessage response = await httpClient.SendAsync(request);
-        HttpContent responseContent = response.Content;
-        string resultsString = string.Empty;
-
-        using (var reader = new StreamReader(responseContent.ReadAsStreamAsync().Result))
-        {
-          // Write the output.
-          resultsString = reader.ReadToEndAsync().Result;
-        }
-
-        if (resultsString == null) { throw new Exception("Result String was empty."); }
-
-        //get the json result and go down one level and update the result
-        JObject json = JObject.Parse(resultsString);
-
-        return json;
-      }
-      catch
-      {
-        return null;
-      }
-      finally
-      {
-        Console.ForegroundColor = ConsoleColor.White;
-      }
-    }
-    #endregion
-
     #region Private
 
     /// <summary>
@@ -248,7 +193,28 @@ namespace Trading_Bot
     {
       HMACSHA256 hmac = new HMACSHA256(Encoding.ASCII.GetBytes(Authentication[API_SECRET]));
       byte[] hashedMessage = hmac.ComputeHash(Encoding.ASCII.GetBytes(message));
-      return Convert.ToBase64String(hashedMessage);
+      return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(message)));
+    }
+
+    public static string ComputeSignature(
+        HttpMethod httpMethod,
+        string secret,
+        double timestamp,
+        string requestUri,
+        string contentBody = "")
+    {
+      var convertedString = System.Convert.FromBase64String(secret);
+      var prehash = timestamp.ToString("F0", CultureInfo.InvariantCulture) + httpMethod.ToString().ToUpper() + requestUri + contentBody;
+      return HashString(prehash, convertedString);
+    }
+
+    public static string HashString(string str, byte[] secret)
+    {
+      var bytes = Encoding.UTF8.GetBytes(str);
+      using (var hmaccsha = new HMACSHA256(secret))
+      {
+        return System.Convert.ToBase64String(hmaccsha.ComputeHash(bytes));
+      }
     }
 
     #endregion

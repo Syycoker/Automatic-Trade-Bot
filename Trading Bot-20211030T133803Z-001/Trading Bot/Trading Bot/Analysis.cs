@@ -19,11 +19,11 @@ namespace Trading_Bot
     /// </summary>
     public static double Threshold { get; private set; }
 
-    public static AnalysisEval EvaluateCoinHistory(string coin, string uri)
+    public static AnalysisEval GetPerformance(string coin, string uri)
     {
       try
       {
-        var jsonObject = AuthenticationConfig.GetResponse(uri);
+        // var response = await AutomatedTradeBot.Client.Transactions.ListTransactionsAsync();
         return AnalysisEval.NONE;
       }
       catch

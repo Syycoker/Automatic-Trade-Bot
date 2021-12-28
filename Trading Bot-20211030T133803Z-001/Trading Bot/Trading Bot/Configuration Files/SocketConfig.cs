@@ -26,7 +26,7 @@ namespace Trading_Bot.Configuration_Files
         if (AuthenticationConfig.Sandbox)
         {
           // Create an authenticated feed.
-          AutomatedTradeBot.WebSocket = new CoinbaseProWebSocket(new WebSocketConfig
+          AutomatedTradeBot.ProWebSocket = new CoinbaseProWebSocket(new WebSocketConfig
           {
             ApiKey = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY],
             Secret = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET],
@@ -34,7 +34,7 @@ namespace Trading_Bot.Configuration_Files
             SocketUri = AuthenticationConfig.Authentication[AuthenticationConfig.SOCKET_URL]
           });
 
-          if (AutomatedTradeBot.WebSocket == null) { throw new Exception("WebSocket is null or invalid."); }
+          if (AutomatedTradeBot.ProWebSocket == null) { throw new Exception("WebSocket is null or invalid."); }
         }
 
         Console.ForegroundColor = ConsoleColor.Green;

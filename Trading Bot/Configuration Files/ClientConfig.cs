@@ -1,6 +1,4 @@
-﻿using Coinbase;
-using Coinbase.Pro;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,7 +16,7 @@ namespace Trading_Bot.Configuration_Files
   public static class ClientConfig
   {
     public static bool Initialised { get; set; }
-    public static string URL_BASE { get; set; } = "https://api.coinbase.com/v2/";
+    public static string URL_BASE { get; set; } = "";
 
     public static bool Initialise()
     {
@@ -28,11 +26,6 @@ namespace Trading_Bot.Configuration_Files
         // Instantiate a Coinbase Pro Object using the now initialised Authentication.
 
         Console.WriteLine("Creating a client object...");
-
-        AutomatedTradeBot.Client = new CoinbaseClient(new ApiKeyConfig 
-        { ApiKey = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY],
-          ApiSecret = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET]
-        });
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Client successfully Initialised.");
@@ -61,7 +54,7 @@ namespace Trading_Bot.Configuration_Files
       WebRequest webRequest = WebRequest.Create(url);
 
       if (webRequest != null)
-      {
+      { 
         webRequest.Method = method;
         webRequest.ContentType = "application/json";
 
@@ -73,6 +66,7 @@ namespace Trading_Bot.Configuration_Files
         whc.Add("CB-ACCESS-SIGN", signature);
         whc.Add("CB-ACCESS-TIMESTAMP", timestamp);
         whc.Add("CB-ACCESS-KEY", AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY]);
+        whc.Add("CB-VERSION", "2017-08-07");
         webRequest.Headers = whc;
 
         using (WebResponse response = webRequest.GetResponse())

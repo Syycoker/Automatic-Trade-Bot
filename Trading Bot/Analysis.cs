@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Coinbase;
-using Coinbase.Pro;
 using Trading_Bot.Configuration_Files;
 
 namespace Trading_Bot

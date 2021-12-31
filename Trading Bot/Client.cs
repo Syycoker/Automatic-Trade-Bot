@@ -10,22 +10,32 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Binance;
+using Binance.Net;
+using Binance.Net.Objects;
+using CryptoExchange.Net.Authentication;
 
 namespace Trading_Bot.Configuration_Files
 {
-  public static class ClientConfig
+  public static class Client
   {
     public static bool Initialised { get; set; }
-    public static string URL_BASE { get; set; } = "";
+    public static string API_KEY = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY];
+    public static string API_SECRET = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET];
+    public static string API_URL = "https://testnet.binance.vision/api";
+    public static BinanceClient BClient { get; set; }
 
     public static bool Initialise()
     {
       try
       {
-        Console.ForegroundColor = ConsoleColor.White;
-        // Instantiate a Coinbase Pro Object using the now initialised Authentication.
-
         Console.WriteLine("Creating a client object...");
+
+        BClient = new BinanceClient(new BinanceClientOptions
+        {
+          ApiCredentials = new ApiCredentials(API_KEY, API_SECRET),
+          BaseAddress = "https://testnet.binance.vision",
+        });
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Client successfully Initialised.");
@@ -39,8 +49,12 @@ namespace Trading_Bot.Configuration_Files
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(e.Message);
         Initialised = false;
-        // Failed initialisation of authentication config.
-        throw new Exception("Client Configuration failed initialisation.");
+        Console.WriteLine("-------------------------------------------------------------------------\n");
+        return false;
+      }
+      finally
+      {
+        Console.ForegroundColor = ConsoleColor.White;
       }
     }
 

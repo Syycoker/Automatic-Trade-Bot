@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WebSocket4Net;
 
 namespace Trading_Bot.Configuration_Files
 {

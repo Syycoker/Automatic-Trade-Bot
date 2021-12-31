@@ -13,7 +13,6 @@ using System.Net.Http;
 using Trading_Bot.Configuration_Files;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
-using Coinbase;
 using System.Net;
 
 namespace Trading_Bot
@@ -24,40 +23,29 @@ namespace Trading_Bot
   public static class AuthenticationConfig
   {
     #region Constants
-
     /// <summary>
     /// The file address for the authentication file.
     /// </summary>
     public const string Authentication_File = @"C:\Users\Sylas Coker\Desktop\UserAuthentication.xml";
-
+    public const string API_NAME = "DEAFULT_API";
+    public const string API_TEST_NAME = "DEFAULT_API_TEST";
     public const string API_KEY = "API_KEY";
     public const string API_SECRET = "API_SECRET";
     public const string API_PASS = "API_PASSPHRASE";
     public const string API_URL = "API_URL";
     public const string SOCKET_URL = "SOCKET_URL";
-
     #endregion
 
     #region Public
-    /// <summary>
-    /// Returns a successful constant string.
-    /// </summary>
-    private const string SUCCESS = "Successful Operation.";
-
-    /// <summary>
-    /// Returns an failed constant string.
-    /// </summary>
-    private const string FAIL = "Failed Operation.";
-
     /// <summary>
     ///  Checks if Authentication Config has been initialised.
     /// </summary>
     public static bool Initialised { get; set; }
 
     /// <summary>
-    /// Check if you want to trade using the sandbox api url or not.
+    /// To check wheter the authentication strings should be from the sandbox api or not.
     /// </summary>
-    public static bool Sandbox { get; set; }
+    public static bool SandBoxMode { get; set; } = true;
 
     /// <summary>
     /// Storage to hold the 'secret' , 'key' and 'pass'.
@@ -86,10 +74,9 @@ namespace Trading_Bot
 
         foreach (XmlNode node in docElement.ChildNodes)
         {
-          #region Sandbox
-          if (Sandbox)
+          if (SandBoxMode)
           {
-            if (node.Name.Equals("Sandbox"))
+            if (node.Name.Equals(API_TEST_NAME))
             {
               foreach (XmlNode childNode in node.ChildNodes)
               {
@@ -114,11 +101,9 @@ namespace Trading_Bot
               }
             }
           }
-          #endregion
-          #region Non Sandbox
           else
           {
-            if (node.Name.Equals("Non_Sandbox"))
+            if (node.Name.Equals(API_NAME))
             {
               foreach (XmlNode childNode in node.ChildNodes)
               {
@@ -133,6 +118,9 @@ namespace Trading_Bot
                   case "AUTH_PASSPHRASE":
                     Authentication.Add(API_PASS, childNode.Attributes["value"].Value);
                     break;
+                  case "AUTH_URL":
+                    Authentication.Add(API_URL, childNode.Attributes["value"].Value);
+                    break;
                   case "SOCKET_URL":
                     Authentication.Add(SOCKET_URL, childNode.Attributes["value"].Value);
                     break;
@@ -140,15 +128,12 @@ namespace Trading_Bot
               }
             }
           }
-          #endregion
         }
-
         // By this stage we assume the autentication dictionary is now loaded and valid.
         // Now check if there's exactly 5 key value pairs, if so, successful, else, unsuccessful.
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("Checking Authorisation keys...");
-        // Example
-        // var jsonObject = GetResponse(@"https://api.coinbase.com/v2/exchange-rates?currency=USD");
+
         Console.WriteLine("Authentication Initialised.");
         Console.WriteLine("-------------------------------------------------------------------------\n");
 
@@ -174,7 +159,6 @@ namespace Trading_Bot
     #endregion
 
     #region Private
-
     /// <summary>
     /// Given a parsed line from file and returns a formatted string that can be stored.
     /// </summary>

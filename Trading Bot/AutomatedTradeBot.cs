@@ -1,33 +1,18 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using WebSocket4Net;
 using Trading_Bot.Configuration_Files;
 using System.Collections.Generic;
 using System.Threading;
 using RestSharp;
+using Binance;
+using Binance.Net;
+using Binance.Net.Objects;
 
 namespace Trading_Bot
 {
   public class AutomatedTradeBot
   {
-    #region Constants
-    /// <summary>
-    /// Returns a successful constant string.
-    /// </summary>
-    public const string SUCCESS = "Successful Operation.";
-
-    /// <summary>
-    /// Returns an failed constant string.
-    /// </summary>
-    public const string FAIL = "Failed Operation.";
-
-    public const string URL_BASE = "https://api.coinbase.com/v2/";
-    #endregion
-
-    #region Initialised Object
-    #endregion
-
     #region Thread Safety
     private static SemaphoreSlim Semaphore = new SemaphoreSlim(1 , 1);
     #endregion
@@ -40,8 +25,7 @@ namespace Trading_Bot
     {
       try
       {
-        AuthenticationConfig.Sandbox = false;
-        Console.WriteLine("Sandbox is currently active : {0}.", AuthenticationConfig.Sandbox);
+        AuthenticationConfig.SandBoxMode = true;
 
         // Initialise the authorisation codes.
         AuthenticationConfig.Initialise();
@@ -49,26 +33,28 @@ namespace Trading_Bot
         // Initialise the database.
         //DatabaseConfig.Initialise();
 
-        // Initialise the database.
-        ClientConfig.Initialise();
+        // Initialise the client [DEPRECATED]
+        Client.Initialise();
 
-        // Initialise the database.
+        // Initialise the socket [DEPRECTAED]
         SocketConfig.Initialise();
 
         Console.ForegroundColor = ConsoleColor.White;
        
         Task.Run(async () =>
         {
-          var responseTest = ClientConfig.JsonRequest(URL_BASE + "user", "GET");
+          var startResult = await Client.BClient.Spot.UserStream.StartUserStreamAsync();
 
-          Console.WriteLine(responseTest);
-          
+          if (!startResult.Success)
+            throw new Exception($"Failed to start user stream: {startResult.Error}");
+
+          Console.WriteLine(startResult.OriginalData);
         }).GetAwaiter().GetResult();
       }
 
       catch (Exception e)
       {
-        // Senda push notification to phone if any error arises.
+        // Send a push notification to phone if any error arises.
         // Restart program again if application closes...
         Console.WriteLine(e.Message);
         Console.ReadKey();
@@ -128,29 +114,6 @@ namespace Trading_Bot
 
     }
 
-    #endregion
-
-    #region Events
-    /// <summary>
-    /// Event handler for when the websocket is closed for whatever reason.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private static void HandleWebSocketClosed(object sender, EventArgs e)
-    {
-      Console.WriteLine("The websocket closed.");
-    }
-
-    /// <summary>
-    /// Event handler for when an error is occured when the websocket is active.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private static void HandleWebSocketError(object sender, SuperSocket.ClientEngine.ErrorEventArgs e)
-    {
-      Console.WriteLine("Websocket Error!");
-      Console.WriteLine(e);
-    }
     #endregion
   }
 }

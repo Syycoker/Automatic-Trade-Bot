@@ -16,6 +16,8 @@ namespace Trading_Bot
     private static SemaphoreSlim Semaphore = new SemaphoreSlim(1 , 1);
     #endregion
 
+    public static BinanceService BClient { get; set; }
+
     /// <summary>
     /// Main method becomes asynchronous when all the system initialisations are complete as async calls propogate up...
     /// </summary>
@@ -38,13 +40,17 @@ namespace Trading_Bot
         SocketConfig.Initialise();
 
         Console.ForegroundColor = ConsoleColor.White;
-       
+
+        HttpClient hClient = new HttpClient();
+        BClient = new BinanceService(Client.API_KEY, Client.API_SECRET, Client.API_URL, hClient);
+        Console.WriteLine("Client has been configured...");
+
         Task.Run(async () =>
         {
-          HttpClient hClient = new HttpClient();
-          BinanceService BClient = new BinanceService(Client.API_KEY, Client.API_SECRET, Client.API_URL, hClient);
-          var response = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
-          Console.WriteLine(response);
+          //var response = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
+          //Console.WriteLine(response);
+
+          var pTrades = await GetExchangeInfo();
         }).GetAwaiter().GetResult();
       }
 
@@ -63,15 +69,19 @@ namespace Trading_Bot
     /// <summary>
     /// Returns an enumarable collection of coins that can be bought / traded for at *this* very moment.
     /// </summary>
-    private static async Task<List<PTrade>> FindPositiveCoins()
+    private static async Task<List<PTrade>> GetExchangeInfo()
     {
       try
       {
         // Find all coins that have an 'AnalysisEval' of 5 or higher that have a positive trend.
         // 
         await Semaphore.WaitAsync();
+        List<PTrade> trades = new();
 
-        
+        var response = await BClient.SendPublicAsync("/api/v1/exchangeInfo", HttpMethod.Get);
+
+        // Parse the response
+        Console.WriteLine(response);
         // Sort each pTrade by their analysis eval
         return null;
       }

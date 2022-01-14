@@ -150,3 +150,11 @@ C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\obj\Debug\net5.
 C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\Binance.Net.dll
 C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\CryptoExchange.Net.dll
 C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\BinanceExchange.API.dll
+C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\log4net.dll
+C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\Microsoft.Extensions.Options.dll
+C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\Microsoft.Extensions.Primitives.dll
+C:\Users\Sylas Coker\source\repos\FractionalTradeBot\Trading Bot\bin\Debug\net5.0-windows\websocket-sharp.dll

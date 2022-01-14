@@ -8,6 +8,8 @@ using RestSharp;
 using Binance;
 using Binance.Net;
 using Binance.Net.Objects;
+using BinanceExchange.API.Models.Response.Interfaces;
+using BinanceExchange.API.Models.Request;
 
 namespace Trading_Bot
 {
@@ -25,7 +27,7 @@ namespace Trading_Bot
     {
       try
       {
-        AuthenticationConfig.SandBoxMode = true;
+        AuthenticationConfig.SandBoxMode = false;
 
         // Initialise the authorisation codes.
         AuthenticationConfig.Initialise();
@@ -33,7 +35,6 @@ namespace Trading_Bot
         // Initialise the database.
         //DatabaseConfig.Initialise();
 
-        // Initialise the client [DEPRECATED]
         Client.Initialise();
 
         // Initialise the socket [DEPRECTAED]
@@ -43,12 +44,7 @@ namespace Trading_Bot
        
         Task.Run(async () =>
         {
-          var startResult = await Client.BClient.Spot.UserStream.StartUserStreamAsync();
-
-          if (!startResult.Success)
-            throw new Exception($"Failed to start user stream: {startResult.Error}");
-
-          Console.WriteLine(startResult.OriginalData);
+          Client.MakeRequest("/api/v3/account");
         }).GetAwaiter().GetResult();
       }
 
@@ -56,6 +52,7 @@ namespace Trading_Bot
       {
         // Send a push notification to phone if any error arises.
         // Restart program again if application closes...
+        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(e.Message);
         Console.ReadKey();
       }

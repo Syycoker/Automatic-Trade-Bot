@@ -10,32 +10,28 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Binance;
-using Binance.Net;
-using Binance.Net.Objects;
+using BinanceExchange;
 using CryptoExchange.Net.Authentication;
+using BinanceExchange.API.Client;
+using BinanceExchange.API.Market;
+using RestSharp;
+using Newtonsoft.Json;
 
 namespace Trading_Bot.Configuration_Files
 {
   public static class Client
   {
     public static bool Initialised { get; set; }
-    public static string API_KEY = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY];
-    public static string API_SECRET = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET];
-    public static string API_URL = "https://testnet.binance.vision/api";
-    public static BinanceClient BClient { get; set; }
+    public static string API_KEY { get; set; } = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY];
+    public static string API_SECRET { get; set; } = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET];
+    public static string API_URL { get; set; }
+
 
     public static bool Initialise()
     {
       try
       {
         Console.WriteLine("Creating a client object...");
-
-        BClient = new BinanceClient(new BinanceClientOptions
-        {
-          ApiCredentials = new ApiCredentials(API_KEY, API_SECRET),
-          BaseAddress = "https://testnet.binance.vision",
-        });
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Client successfully Initialised.");
@@ -58,72 +54,57 @@ namespace Trading_Bot.Configuration_Files
       }
     }
 
-    public static string JsonRequest(string url, string method)
+    public static void MakeRequest(string endpoint)
     {
-      // take care of any spaces in params
-      url = Uri.EscapeUriString(url);
+      var client = new RestClient("https://api.binance.com");
 
-      string returnData = string.Empty;
+      RestRequest request = new RestRequest("/api/v3/time", Method.GET); 
 
-      WebRequest webRequest = WebRequest.Create(url);
+      RestResponse response = (RestResponse)client.Get(request);
 
-      if (webRequest != null)
-      { 
-        webRequest.Method = method;
-        webRequest.ContentType = "application/json";
+      long timestamp = GetTimestamp();
 
-        string timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.CurrentCulture);
-        string body = "";
-        string signature = GenerateSignature(timestamp, method, url, body, AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET]);
+      request = new RestRequest(endpoint, Method.GET);
 
-        var whc = new WebHeaderCollection();
-        whc.Add("CB-ACCESS-SIGN", signature);
-        whc.Add("CB-ACCESS-TIMESTAMP", timestamp);
-        whc.Add("CB-ACCESS-KEY", AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY]);
-        whc.Add("CB-VERSION", "2017-08-07");
-        webRequest.Headers = whc;
+      request.AddHeader("X-MBX-APIKEY", API_KEY);
 
-        using (WebResponse response = webRequest.GetResponse())
+      request.AddQueryParameter("recvWindow", "5000");
+      request.AddQueryParameter("timestamp", timestamp.ToString());
+
+      request.AddQueryParameter("signature", CreateSignature(request.Parameters, API_SECRET));
+
+      response = (RestResponse)client.Get(request);
+
+      System.Diagnostics.Debug.WriteLine(response.Content);
+
+    }
+
+    public static string CreateSignature(List<Parameter> parameters, string secret)
+    {
+      var signature = "";
+      if (parameters.Count > 0)
+      {
+        foreach (var item in parameters)
         {
-          using (Stream stream = response.GetResponseStream())
-          {
-            StreamReader reader = new StreamReader(stream);
-            returnData = reader.ReadToEnd();
-          }
+          if (item.Name != "X-MBX-APIKEY")
+            signature += $"{item.Name}={item.Value}&";
         }
+        signature = signature.Substring(0, signature.Length - 1);
       }
 
-      return returnData;
+
+      byte[] keyBytes = Encoding.UTF8.GetBytes(secret);
+      byte[] queryStringBytes = Encoding.UTF8.GetBytes(signature);
+      HMACSHA256 hmacsha256 = new HMACSHA256(keyBytes);
+
+      byte[] bytes = hmacsha256.ComputeHash(queryStringBytes);
+
+      return BitConverter.ToString(bytes).Replace("-", "").ToLower();
     }
 
-    public static string GenerateSignature(string timestamp, string method, string url, string body, string appSecret)
+    private static long GetTimestamp()
     {
-      return GetHMACInHex(appSecret, timestamp + method + url + body).ToLower();
-    }
-    internal static string GetHMACInHex(string key, string data)
-    {
-      var hmacKey = Encoding.UTF8.GetBytes(key);
-      var dataBytes = Encoding.UTF8.GetBytes(data);
-
-      using (var hmac = new HMACSHA256(hmacKey))
-      {
-        var sig = hmac.ComputeHash(dataBytes);
-        return ByteToHexString(sig);
-      }
-    }
-    
-    static string ByteToHexString(byte[] bytes)
-    {
-      char[] c = new char[bytes.Length * 2];
-      int b;
-      for (int i = 0; i < bytes.Length; i++)
-      {
-        b = bytes[i] >> 4;
-        c[i * 2] = (char)(87 + b + (((b - 10) >> 31) & -39));
-        b = bytes[i] & 0xF;
-        c[i * 2 + 1] = (char)(87 + b + (((b - 10) >> 31) & -39));
-      }
-      return new string(c);
+      return new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
     }
   }
 }

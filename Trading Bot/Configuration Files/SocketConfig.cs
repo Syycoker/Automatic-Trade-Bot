@@ -14,7 +14,6 @@ namespace Trading_Bot.Configuration_Files
     {
       try
       {
-        Console.ForegroundColor = ConsoleColor.White;
         // Instantiate a Coinbase Pro WebSocket Object using the now initialised Authentication.
 
         Console.WriteLine("Creating websocket object...");
@@ -34,6 +33,10 @@ namespace Trading_Bot.Configuration_Files
         // Failed initialisation of authentication config.
         Initialised = false;
         throw new Exception("WebSocket Configuration failed initialisation, please restart.");
+      }
+      finally
+      {
+        Console.ForegroundColor = ConsoleColor.White;
       }
     }
   }

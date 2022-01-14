@@ -76,7 +76,7 @@ namespace Trading_Bot
         {
           if (SandBoxMode)
           {
-            if (node.Name.Equals(API_TEST_NAME))
+            if (node.Name.Equals(API_NAME))
             {
               foreach (XmlNode childNode in node.ChildNodes)
               {
@@ -103,7 +103,7 @@ namespace Trading_Bot
           }
           else
           {
-            if (node.Name.Equals(API_NAME))
+            if (node.Name.Equals(API_TEST_NAME))
             {
               foreach (XmlNode childNode in node.ChildNodes)
               {

@@ -5,11 +5,8 @@ using Trading_Bot.Configuration_Files;
 using System.Collections.Generic;
 using System.Threading;
 using RestSharp;
-using Binance;
-using Binance.Net;
-using Binance.Net.Objects;
-using BinanceExchange.API.Models.Response.Interfaces;
-using BinanceExchange.API.Models.Request;
+using BinanceDotNet;
+using System.Net.Http;
 
 namespace Trading_Bot
 {
@@ -44,8 +41,10 @@ namespace Trading_Bot
        
         Task.Run(async () =>
         {
-          var response = Client.MakeRequest("/api/v3/account");
-          System.Diagnostics.Debug.WriteLine(response.Content);
+          HttpClient hClient = new HttpClient();
+          BinanceService BClient = new BinanceService(Client.API_KEY, Client.API_SECRET, Client.API_URL, hClient);
+          var response = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
+          Console.WriteLine(response);
         }).GetAwaiter().GetResult();
       }
 

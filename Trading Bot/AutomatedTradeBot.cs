@@ -44,7 +44,8 @@ namespace Trading_Bot
        
         Task.Run(async () =>
         {
-          Client.MakeRequest("/api/v3/account");
+          var response = Client.MakeRequest("/api/v3/account");
+          System.Diagnostics.Debug.WriteLine(response.Content);
         }).GetAwaiter().GetResult();
       }
 

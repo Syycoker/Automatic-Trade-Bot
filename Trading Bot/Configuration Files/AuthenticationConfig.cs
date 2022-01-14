@@ -27,7 +27,7 @@ namespace Trading_Bot
     /// The file address for the authentication file.
     /// </summary>
     public const string Authentication_File = @"C:\Users\Sylas Coker\Desktop\UserAuthentication.xml";
-    public const string API_NAME = "DEAFULT_API";
+    public const string API_NAME = "DEFAULT_API";
     public const string API_TEST_NAME = "DEFAULT_API_TEST";
     public const string API_KEY = "API_KEY";
     public const string API_SECRET = "API_SECRET";
@@ -74,60 +74,8 @@ namespace Trading_Bot
 
         foreach (XmlNode node in docElement.ChildNodes)
         {
-          if (SandBoxMode)
-          {
-            if (node.Name.Equals(API_NAME))
-            {
-              foreach (XmlNode childNode in node.ChildNodes)
-              {
-                switch (childNode.Name)
-                {
-                  case "AUTH_KEY":
-                    Authentication.Add(API_KEY, childNode.Attributes["value"].Value);
-                    break;
-                  case "AUTH_SECRET":
-                    Authentication.Add(API_SECRET, childNode.Attributes["value"].Value);
-                    break;
-                  case "AUTH_PASSPHRASE":
-                    Authentication.Add(API_PASS, childNode.Attributes["value"].Value);
-                    break;
-                  case "AUTH_URL":
-                    Authentication.Add(API_URL, childNode.Attributes["value"].Value);
-                    break;
-                  case "SOCKET_URL":
-                    Authentication.Add(SOCKET_URL, childNode.Attributes["value"].Value);
-                    break;
-                }
-              }
-            }
-          }
-          else
-          {
-            if (node.Name.Equals(API_TEST_NAME))
-            {
-              foreach (XmlNode childNode in node.ChildNodes)
-              {
-                switch (childNode.Name)
-                {
-                  case "AUTH_KEY":
-                    Authentication.Add(API_KEY, childNode.Attributes["value"].Value);
-                    break;
-                  case "AUTH_SECRET":
-                    Authentication.Add(API_SECRET, childNode.Attributes["value"].Value);
-                    break;
-                  case "AUTH_PASSPHRASE":
-                    Authentication.Add(API_PASS, childNode.Attributes["value"].Value);
-                    break;
-                  case "AUTH_URL":
-                    Authentication.Add(API_URL, childNode.Attributes["value"].Value);
-                    break;
-                  case "SOCKET_URL":
-                    Authentication.Add(SOCKET_URL, childNode.Attributes["value"].Value);
-                    break;
-                }
-              }
-            }
-          }
+          if (SandBoxMode == false && node.Name.ToLower().Equals(API_NAME.ToLower())) { ParseNode(node); break; }
+          if (SandBoxMode && node.Name.ToLower().Equals(API_TEST_NAME.ToLower())) { ParseNode(node); break; }
         }
         // By this stage we assume the autentication dictionary is now loaded and valid.
         // Now check if there's exactly 5 key value pairs, if so, successful, else, unsuccessful.
@@ -159,6 +107,30 @@ namespace Trading_Bot
     #endregion
 
     #region Private
+    private static void ParseNode(XmlNode node)
+    {
+      foreach (XmlNode childNode in node.ChildNodes)
+      {
+        switch (childNode.Name)
+        {
+          case "AUTH_KEY":
+            Authentication.Add(API_KEY, childNode.Attributes["value"].Value);
+            break;
+          case "AUTH_SECRET":
+            Authentication.Add(API_SECRET, childNode.Attributes["value"].Value);
+            break;
+          case "AUTH_PASSPHRASE":
+            Authentication.Add(API_PASS, childNode.Attributes["value"].Value);
+            break;
+          case "AUTH_URL":
+            Authentication.Add(API_URL, childNode.Attributes["value"].Value);
+            break;
+          case "SOCKET_URL":
+            Authentication.Add(SOCKET_URL, childNode.Attributes["value"].Value);
+            break;
+        }
+      }
+    }
     /// <summary>
     /// Given a parsed line from file and returns a formatted string that can be stored.
     /// </summary>

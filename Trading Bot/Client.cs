@@ -54,28 +54,23 @@ namespace Trading_Bot.Configuration_Files
       }
     }
 
-    public static void MakeRequest(string endpoint)
+    public static RestResponse MakeRequest(string endpoint)
     {
       var client = new RestClient("https://api.binance.com");
 
-      RestRequest request = new RestRequest("/api/v3/time", Method.GET); 
-
-      RestResponse response = (RestResponse)client.Get(request);
-
       long timestamp = GetTimestamp();
 
-      request = new RestRequest(endpoint, Method.GET);
+      RestRequest request = new RestRequest(endpoint, Method.GET);
 
       request.AddHeader("X-MBX-APIKEY", API_KEY);
 
-      request.AddQueryParameter("recvWindow", "5000");
       request.AddQueryParameter("timestamp", timestamp.ToString());
 
       request.AddQueryParameter("signature", CreateSignature(request.Parameters, API_SECRET));
 
-      response = (RestResponse)client.Get(request);
+      RestResponse response = (RestResponse)client.Get(request);
 
-      System.Diagnostics.Debug.WriteLine(response.Content);
+      return response;
 
     }
 
@@ -92,14 +87,18 @@ namespace Trading_Bot.Configuration_Files
         signature = signature.Substring(0, signature.Length - 1);
       }
 
+      return GetHMAC(signature, secret);
+    }
 
-      byte[] keyBytes = Encoding.UTF8.GetBytes(secret);
-      byte[] queryStringBytes = Encoding.UTF8.GetBytes(signature);
-      HMACSHA256 hmacsha256 = new HMACSHA256(keyBytes);
+    private static string GetHMAC(string text, string key)
+    {
+      key = key ?? "";
 
-      byte[] bytes = hmacsha256.ComputeHash(queryStringBytes);
-
-      return BitConverter.ToString(bytes).Replace("-", "").ToLower();
+      using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+      {
+        var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(text));
+        return Convert.ToBase64String(hash);
+      }
     }
 
     private static long GetTimestamp()

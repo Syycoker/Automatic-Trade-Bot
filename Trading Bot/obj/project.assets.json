@@ -6590,11 +6590,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Sylas Coker\\source\\repos\\FractionalTradeBot\\Trading Bot\\Trading Bot.csproj",
+      "projectUniqueName": "C:\\Users\\Sylas Coker\\Documents\\GitHub\\Automatic-Trade-Bot\\Trading Bot\\Trading Bot.csproj",
       "projectName": "Trading Bot",
-      "projectPath": "C:\\Users\\Sylas Coker\\source\\repos\\FractionalTradeBot\\Trading Bot\\Trading Bot.csproj",
+      "projectPath": "C:\\Users\\Sylas Coker\\Documents\\GitHub\\Automatic-Trade-Bot\\Trading Bot\\Trading Bot.csproj",
       "packagesPath": "C:\\Users\\Sylas Coker\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Sylas Coker\\source\\repos\\FractionalTradeBot\\Trading Bot\\obj\\",
+      "outputPath": "C:\\Users\\Sylas Coker\\Documents\\GitHub\\Automatic-Trade-Bot\\Trading Bot\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Sylas Coker\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -6658,12 +6658,18 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[5.0.13, 5.0.13]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.100-rc.2.21505.57\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.101\\RuntimeIdentifierGraph.json"
       }
     }
   }

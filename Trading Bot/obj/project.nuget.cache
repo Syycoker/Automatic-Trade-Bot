@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "kNiHkYXzqa0YgAVA6KLpFnrr98q0fNpmEQ5292Mp9Bo1G8YopJhzk01DutqDw1MNf1+C0rkrHHEV7nw8IBqnUA==",
+  "dgSpecHash": "vhOadew13GuW+IwDj8mGMknCxxysYun4NOc03TxFlYVMhsfkd+RIegDNjdUUGXyrQw8C7iaM9Nsfi76HDZGF4g==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Sylas Coker\\source\\repos\\FractionalTradeBot\\Trading Bot\\Trading Bot.csproj",
+  "projectFilePath": "C:\\Users\\Sylas Coker\\Documents\\GitHub\\Automatic-Trade-Bot\\Trading Bot\\Trading Bot.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Sylas Coker\\.nuget\\packages\\binance.net\\7.2.7\\binance.net.7.2.7.nupkg.sha512",
     "C:\\Users\\Sylas Coker\\.nuget\\packages\\binancedotnet\\4.12.0\\binancedotnet.4.12.0.nupkg.sha512",
@@ -123,7 +123,8 @@
     "C:\\Users\\Sylas Coker\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512",
     "C:\\Users\\Sylas Coker\\.nuget\\packages\\system.xml.readerwriter\\4.0.11\\system.xml.readerwriter.4.0.11.nupkg.sha512",
     "C:\\Users\\Sylas Coker\\.nuget\\packages\\system.xml.xmldocument\\4.0.1\\system.xml.xmldocument.4.0.1.nupkg.sha512",
-    "C:\\Users\\Sylas Coker\\.nuget\\packages\\websocketsharp-netstandard\\1.0.1\\websocketsharp-netstandard.1.0.1.nupkg.sha512"
+    "C:\\Users\\Sylas Coker\\.nuget\\packages\\websocketsharp-netstandard\\1.0.1\\websocketsharp-netstandard.1.0.1.nupkg.sha512",
+    "C:\\Users\\Sylas Coker\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\5.0.13\\microsoft.netcore.app.host.win-x64.5.0.13.nupkg.sha512"
   ],
   "logs": []
 }

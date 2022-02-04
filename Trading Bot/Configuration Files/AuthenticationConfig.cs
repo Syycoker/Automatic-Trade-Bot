@@ -14,6 +14,7 @@ using Trading_Bot.Configuration_Files;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Net;
+using Trading_Bot.Exceptions;
 
 namespace Trading_Bot
 {
@@ -26,7 +27,7 @@ namespace Trading_Bot
     /// <summary>
     /// The file address for the authentication file.
     /// </summary>
-    public const string Authentication_File = @"C:\Users\Sylas Coker\Desktop\UserAuthentication.xml";
+    public static string Authentication_File() { return Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" + "UserAuthentication1.xml"; }
     public const string API_NAME = "DEFAULT_API";
     public const string API_TEST_NAME = "DEFAULT_API_TEST";
     public const string API_KEY = "API_KEY";
@@ -35,7 +36,6 @@ namespace Trading_Bot
     public const string API_URL = "API_URL";
     public const string SOCKET_URL = "SOCKET_URL";
     #endregion
-
     #region Public
     /// <summary>
     ///  Checks if Authentication Config has been initialised.
@@ -52,7 +52,6 @@ namespace Trading_Bot
     /// </summary>
     public static Dictionary<string, string> Authentication = new();
     #endregion
-
     #region Initialisation
     /// <summary>
     /// Try to establish valid Authentication.
@@ -66,10 +65,16 @@ namespace Trading_Bot
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("Reading authentication file...");
 
+        string filePath = Authentication_File();
+        if (!File.Exists(filePath))
+        {
+          throw new InvalidAuthenticationException();
+        }
+
         // Try and open a file with credentials.
         //string parsedFile = File.ReadAllLines(Authentication_File);
         XmlDocument doc = new();
-        doc.Load(Authentication_File);
+        doc.Load(filePath);
         XmlElement docElement = doc.DocumentElement;
 
         foreach (XmlNode node in docElement.ChildNodes)
@@ -89,6 +94,17 @@ namespace Trading_Bot
       }
       catch (Exception e)
       {
+        // Just check if the exception is of this type, if so, control the exception
+        if (e.GetType() == typeof(InvalidAuthenticationException))
+        {
+          Console.ForegroundColor = ConsoleColor.Yellow;
+          Console.WriteLine("The system has detected that you do not have the correct file type to parse.");
+          Console.WriteLine("The system will now create the default file in  your desktop area.");
+          Console.WriteLine("Fill In the values in the element attributes.");
+          Console.WriteLine("Please restart the system...");
+
+          return false;
+        }
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("Invalid file path.");
         Console.WriteLine("Failed Establishing Connection...");
@@ -105,7 +121,6 @@ namespace Trading_Bot
     }
 
     #endregion
-
     #region Private
     private static void ParseNode(XmlNode node)
     {

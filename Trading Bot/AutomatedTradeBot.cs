@@ -26,7 +26,8 @@ namespace Trading_Bot
     {
       try
       {
-        AuthenticationConfig.SandBoxMode = false;
+        // Important!
+        AuthenticationConfig.SandBoxMode = true;
 
         // Initialise the authorisation codes.
         AuthenticationConfig.Initialise();
@@ -42,7 +43,8 @@ namespace Trading_Bot
         Console.ForegroundColor = ConsoleColor.White;
 
         HttpClient hClient = new HttpClient();
-        BClient = new BinanceService(Client.API_KEY, Client.API_SECRET, Client.API_URL, hClient);
+        BClient = new BinanceService(hClient);
+
         Console.WriteLine("Client has been configured...");
 
         Task.Run(async () =>

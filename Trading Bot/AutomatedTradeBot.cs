@@ -50,7 +50,7 @@ namespace Trading_Bot
         Task.Run(async () =>
         {
           await UpdateAvailableCoins();
-          await GetAccountBalance();
+          await GetAssetDetail(AvailableCoins[0]);
         }).GetAwaiter().GetResult();
       }
 
@@ -77,14 +77,14 @@ namespace Trading_Bot
         // Create the threads.
         for (int i = 0; i < buyThreadCount; i++)
         {
-          Thread buyThread = new Thread(Buy) { IsBackground = true };
-          buyThread.Start();
+          // Thread buyThread = new Thread() { IsBackground = true };
+          // buyThread.Start();
         }
 
         for (int j = 0; j < sellThreadCount; j++)
         {
-          Thread sellThread = new Thread(Sell) { IsBackground = true };
-          sellThread.Start();
+          // Thread sellThread = new Thread() { IsBackground = true };
+          // sellThread.Start();
         }
         return true;
       }
@@ -96,7 +96,7 @@ namespace Trading_Bot
     }
 
     /// <summary>
-    /// Updates the available coins in the exchange every minuite or so.
+    /// Gets all the available and tradeable coins on the market by returning the product's name, i.e. "BTC"...
     /// </summary>
     /// <returns></returns>
     private static async Task UpdateAvailableCoins()
@@ -131,19 +131,43 @@ namespace Trading_Bot
     }
 
     /// <summary>
-    /// Returns the wallet balance for a transaction or information
+    /// Returns the details about aspecific asset.
     /// </summary>
-    /// <returns></returns>
-    private static async Task GetAccountBalance()
+    /// <returns>A response string.</returns>
+    private static async Task<string> GetAssetDetail(string assetName)
     {
-      var response = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
-      var jResponse = JObject.Parse(response);
-      var value = jResponse["balances"][0].ToString();
+      Dictionary<string, object> assetDictionary = new();
+      assetDictionary.Add("asset", assetName);
+      string response = await BClient.SendSignedAsync("/sapi/v1/asset/assetDetail", HttpMethod.Get, assetDictionary);
+      return response;
     }
 
-    private void Buy()
+    /// <summary>
+    /// Attempts to buy a single product by placing a bid slightly below it's average sell price in the marketplace.
+    /// </summary>
+    /// <param name="synbol"></param>
+    /// <param name="bidAmount"></param>
+    /// <returns></returns>
+    private static async Task<bool> BuyAsset(string symbol, decimal bidAmount)
     {
+      try
+      {
+        Dictionary<string, object> parameters = new();
 
+        // Setting the parameters for this request as i'll only ever want to buy one asset at a time.
+        parameters.Add("symbol", symbol);
+        parameters.Add("side", "BUY");
+        parameters.Add("type", "LIMIT");
+        parameters.Add("quantity", 1);
+        parameters.Add("price", bidAmount);
+        string response = await BClient.SendSignedAsync("/api/v3/order", HttpMethod.Post, parameters);
+        return true;
+      }
+      catch
+      {
+        // Swallow Exception
+        return false;
+      }
     }
 
     private void Sell()

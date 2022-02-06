@@ -7,16 +7,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Newtonsoft.Json;
+using Trading_Bot;
 using Trading_Bot.Configuration_Files;
-using static Trading_Bot.Configuration_Files.Client;
 
 namespace BinanceDotNet
 {
   public sealed class BinanceService
   {
-    private string baseUrl { get; set; } = API_URL;
-    private string apiKey { get; set; } = API_KEY;
-    private string apiSecret { get; set; } = API_SECRET;
+    private string baseUrl { get; set; } = AuthenticationConfig.Authentication[AuthenticationConfig.API_URL];
+    private string apiKey { get; set; } = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY];
+    private string apiSecret { get; set; } = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET];
     private HttpClient httpClient;
 
     #region Constructors
@@ -33,10 +33,9 @@ namespace BinanceDotNet
       this.httpClient = httpClient;
     }
     #endregion
-
+    #region Private
     private async Task<string> SendAsync(string requestUri, HttpMethod httpMethod, object content = null)
     {
-      Console.WriteLine(requestUri);
       using (var request = new HttpRequestMessage(httpMethod, this.baseUrl + requestUri))
       {
         request.Headers.Add("X-MBX-APIKEY", this.apiKey);
@@ -107,5 +106,6 @@ namespace BinanceDotNet
         return BitConverter.ToString(hash).Replace("-", "").ToLower();
       }
     }
+    #endregion
   }
 }

@@ -34,7 +34,7 @@ namespace Trading_Bot.Exceptions
         string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
         // Create a file name for the user's xml file.
-        const string authenticationXmlFileName = "UserAuthentication1.xml";
+        const string authenticationXmlFileName = "UserAuthentication.xml";
         string userFilePath = desktopPath + "\\" + authenticationXmlFileName;
 
         List<string> lines = new();

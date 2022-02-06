@@ -27,7 +27,7 @@ namespace Trading_Bot
     /// <summary>
     /// The file address for the authentication file.
     /// </summary>
-    public static string Authentication_File() { return Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" + "UserAuthentication1.xml"; }
+    public static string Authentication_File() { return Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" + "UserAuthentication.xml"; }
     public const string API_NAME = "DEFAULT_API";
     public const string API_TEST_NAME = "DEFAULT_API_TEST";
     public const string API_KEY = "API_KEY";
@@ -111,8 +111,7 @@ namespace Trading_Bot
 
         Console.WriteLine(e.Message);
         Initialised = false;
-        // Failed initialisation of authentication config.
-        throw new Exception("Authentication Configuration failed initialisation.");
+        return false;
       }
       finally
       {

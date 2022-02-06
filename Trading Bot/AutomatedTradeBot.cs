@@ -7,6 +7,8 @@ using System.Threading;
 using RestSharp;
 using BinanceDotNet;
 using System.Net.Http;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Trading_Bot
 {
@@ -27,7 +29,7 @@ namespace Trading_Bot
       try
       {
         // Important!
-        AuthenticationConfig.SandBoxMode = true;
+        AuthenticationConfig.SandBoxMode = false;
 
         // Initialise the authorisation codes.
         AuthenticationConfig.Initialise();
@@ -35,24 +37,20 @@ namespace Trading_Bot
         // Initialise the database.
         //DatabaseConfig.Initialise();
 
-        Client.Initialise();
-
         // Initialise the socket [DEPRECTAED]
-        SocketConfig.Initialise();
+        // SocketConfig.Initialise();
 
         Console.ForegroundColor = ConsoleColor.White;
 
         HttpClient hClient = new HttpClient();
         BClient = new BinanceService(hClient);
 
-        Console.WriteLine("Client has been configured...");
+        Console.WriteLine("Program Starting...");
 
         Task.Run(async () =>
         {
-          //var response = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
-          //Console.WriteLine(response);
-
-          var pTrades = await GetExchangeInfo();
+          await UpdateAvailableCoins();
+          await GetAccountBalance();
         }).GetAwaiter().GetResult();
       }
 
@@ -66,7 +64,92 @@ namespace Trading_Bot
       }
     }
 
-    #region Main Procedure
+    #region Main Procedures
+    /// <summary>
+    /// Stores the trade pairs (key).
+    /// </summary>
+    public static List<string> AvailableCoins = new();
+
+    private bool StartRoutines(int buyThreadCount = 1, int sellThreadCount = 1)
+    {
+      try
+      {
+        // Create the threads.
+        for (int i = 0; i < buyThreadCount; i++)
+        {
+          Thread buyThread = new Thread(Buy) { IsBackground = true };
+          buyThread.Start();
+        }
+
+        for (int j = 0; j < sellThreadCount; j++)
+        {
+          Thread sellThread = new Thread(Sell) { IsBackground = true };
+          sellThread.Start();
+        }
+        return true;
+      }
+      catch
+      {
+        // Swallow Exceptions
+        return false;
+      }
+    }
+
+    /// <summary>
+    /// Updates the available coins in the exchange every minuite or so.
+    /// </summary>
+    /// <returns></returns>
+    private static async Task UpdateAvailableCoins()
+    {
+      try
+      {
+        await Semaphore.WaitAsync();
+
+        // Clear any coins saved already and start afresh.
+        AvailableCoins.Clear();
+        string response = await BClient.SendSignedAsync("/sapi/v1/capital/config/getall", HttpMethod.Get);
+        var products = JArray.Parse(response);
+
+        foreach (var product in products)
+        {
+          // Not interested in products that are not tradeable.
+          if (!product["trading"].Value<bool>() == true) { continue; }
+
+          AvailableCoins.Add(product["coin"].Value<string>());
+        }
+      }
+      catch
+      {
+        // Swallow Exception for now, will create logging system
+        // or maybe create frontend for mobile app that sends notifications to my phone, who knows. for now
+        //do everything backened.
+      }
+      finally
+      {
+        Semaphore.Release();
+      }
+    }
+
+    /// <summary>
+    /// Returns the wallet balance for a transaction or information
+    /// </summary>
+    /// <returns></returns>
+    private static async Task GetAccountBalance()
+    {
+      var response = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
+      var jResponse = JObject.Parse(response);
+      var value = jResponse["balances"][0].ToString();
+    }
+
+    private void Buy()
+    {
+
+    }
+
+    private void Sell()
+    {
+
+    }
 
     /// <summary>
     /// Returns an enumarable collection of coins that can be bought / traded for at *this* very moment.
@@ -75,15 +158,14 @@ namespace Trading_Bot
     {
       try
       {
-        // Find all coins that have an 'AnalysisEval' of 5 or higher that have a positive trend.
-        // 
+        // Get all the coins in the exchange
         await Semaphore.WaitAsync();
-        List<PTrade> trades = new();
+        Dictionary<string, decimal> exchange = new();
 
-        var response = await BClient.SendPublicAsync("/api/v1/exchangeInfo", HttpMethod.Get);
-
-        // Parse the response
+        var response = await BClient.SendSignedAsync("/api/v1/exchangeInfo", HttpMethod.Get);
+        
         Console.WriteLine(response);
+
         // Sort each pTrade by their analysis eval
         return null;
       }
@@ -97,32 +179,6 @@ namespace Trading_Bot
         Semaphore.Release();
       }
     }
-
-    /// <summary>
-    /// Chooses the coin with the most prospect to return a good 'AnalysisEval'.
-    /// </summary>
-    private async static void ChooseCoin()
-    {
-
-    }
-
-    /// <summary>
-    /// Runs and evalutation on the coin itself, decides whether to buy the coin.
-    /// </summary>
-    private async static void RunEvalutationOnCoin()
-    {
-
-    }
-
-
-    /// <summary>
-    /// Sells the coin from coinbase account.
-    /// </summary>
-    private async static void SellCoin()
-    {
-
-    }
-
     #endregion
   }
 }

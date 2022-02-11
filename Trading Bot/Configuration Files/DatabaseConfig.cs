@@ -51,7 +51,7 @@ namespace Trading_Bot
       {
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("Initialising Database...");
-        ConnectionString = "Server = localhost; Database = automatedtradingdb; Uid = root; Pwd = Blader10;";
+        ConnectionString = "";
 
         Connection = new MySqlConnection(ConnectionString);
         Connection.Open();

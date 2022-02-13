@@ -36,15 +36,14 @@ namespace Trading_Bot
 
         Console.ForegroundColor = ConsoleColor.White;
 
+        // Set the BClient
         HttpClient hClient = new HttpClient();
         BClient = new BinanceService(hClient);
 
         Console.WriteLine("Program Starting...");
 
-        Task.Run(async () =>
-        {
-          await UpdateAvailableCoins();
-        }).GetAwaiter().GetResult();
+        Thread buyThread = new Thread(BuySystem.AnalyseMarket);
+        buyThread.Start();
       }
 
       catch (Exception e)

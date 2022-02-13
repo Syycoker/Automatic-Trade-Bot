@@ -10,6 +10,19 @@ using System.Threading.Tasks;
 
 namespace Trading_Bot
 {
+  public enum ORDER_SIDE
+  {
+    NONE = 0,
+    BUY = 1,
+    SELL = 2
+  }
+  public enum TIME_IN_FORCE
+  {
+    NONE = 0,
+    GTC = 1,  // 'Good till cancelled',
+    IOC = 2,  // Immediate or Cancelled,
+    FOK = 3   // Fill or Kill.
+  }
   public static class BuySystem
   {
     #region Client
@@ -21,8 +34,6 @@ namespace Trading_Bot
     #region Constants
     private const decimal SPREAD_LEEWAY = 0.00001m;
     private const int BUY_QUANTITY = 1;
-    private const string TIME_IN_FORCE = "GTC";
-    private const decimal PRICE = 1.000m;
     #endregion
     #region Fees
     private static decimal MAKER_FEE = 0.00m;
@@ -41,25 +52,23 @@ namespace Trading_Bot
         while (true)
         {
           // First step, look for every coin in the marketplace
-          List<string> availableCoins = GetAllTradeableCoinsInExchange().Result;
+          List<string> availableCoins = GetExchangeInfo().Result;
 
           // Assign a rating to all the coins that are tardebale in the marketplace.
           var probableBuyOrders = AnalyseAssets(availableCoins).Result;
 
           foreach (var assetToBuy in probableBuyOrders)
           {
+            // Only buy assets that are rated 'good' and upwards
             if (assetToBuy.Item1 >= AnalysisEval.GOOD)
             {
-              var RESP = PlaceBuyOrder(assetToBuy.Item2).Result;
+              var buyResponse = PlaceTakeProfitLimit(assetToBuy.Item2).Result;
 
               // If an unsuccessful order...
-              if (RESP == false)
+              if (buyResponse == false)
                 continue;
             }
           }
-
-          // Buy the assets if they've passed evaluations.
-
         }
       }
       catch(Exception e)
@@ -67,70 +76,6 @@ namespace Trading_Bot
         // If an exception has occured here, send a notification!!
         Console.WriteLine("Error has occured when analysing marketplace.");
         Console.WriteLine(e.Message);
-      }
-    }
-
-    /// <summary>
-    /// Gets the trade fee of a pair.
-    /// </summary>
-    /// <returns>Returns a decimal value of the trade fee. </returns>
-    public static async Task<decimal> GetTradeFee(string pairSymbol = "")
-    {
-      try
-      {
-        Console.WriteLine("Getting Trade Fee...");
-
-        Dictionary<string, object> param = new();
-        param.Add("symbol", pairSymbol);
-
-        string response = string.Empty;
-
-        if (string.IsNullOrEmpty(pairSymbol)) { response = await BClient.SendPublicAsync("sapi/v1/asset/tradeFee", HttpMethod.Get); }
-        else { response = await BClient.SendPublicAsync("sapi/v1/asset/tradeFee", HttpMethod.Get, param); }
-
-        decimal responseVal = decimal.Parse(response);
-
-        Console.WriteLine("Trade fee set.");
-        return responseVal;
-      }
-      catch
-      {
-        // Swallow and send an invalid response.
-        return decimal.MinValue;
-      }
-    }
-
-    /// <summary>
-    /// Attempts to buy a single product by placing a bid slightly below it's average sell price in the marketplace.
-    /// </summary>
-    /// <param name="synbol"></param>
-    /// <param name="bidAmount"></param>
-    /// <returns>True if the asset has been 'bought'.</returns>
-    public static async Task<bool> BuyAsset(string symbol, decimal bidAmount)
-    {
-      try
-      {
-        await Semaphore.WaitAsync();
-
-        Dictionary<string, object> parameters = new();
-
-        // Setting the parameters for this request as i'll only ever want to buy one asset at a time.
-        parameters.Add("symbol", symbol);
-        parameters.Add("side", "BUY");
-        parameters.Add("type", "LIMIT");
-        parameters.Add("quantity", 1);
-        parameters.Add("price", bidAmount);
-        string response = await BClient.SendSignedAsync("/api/v3/order", HttpMethod.Post, parameters);
-        return true;
-      }
-      catch
-      {
-        // Swallow Exception
-        return false;
-      }
-      finally
-      {
-        Semaphore.Release();
       }
     }
 
@@ -163,13 +108,15 @@ namespace Trading_Bot
     /// <summary>
     /// Returns an enumarable collection of coins that can be bought / traded for at *this* very moment.
     /// </summary>
-    private static async Task<IEnumerable<string>> GetExchangeInfo()
+    private static async Task<List<string>> GetExchangeInfo()
     {
       try
       {
+        Console.WriteLine("Getting exchange information...");
         // Attempt to get all the 'desirable' coins in the exchange
         await Semaphore.WaitAsync();
 
+        List<string> assets = new();
         Dictionary<string, decimal> exchange = new();
 
         var response = await BClient.SendPublicAsync("/api/v1/exchangeInfo", HttpMethod.Get);
@@ -178,16 +125,17 @@ namespace Trading_Bot
         foreach (var probableSymbol in responseObj["symbols"])
         {
           // I only want coins pairs that are trading
-          if (probableSymbol["trading"].Equals(""))
+          if (probableSymbol["status"].Value<string>().Equals("TRADING"))
           {
             string pairSymbol = probableSymbol["symbol"].Value<string>();
+            assets.Add(pairSymbol);
           }  
         }
 
-        Console.WriteLine(response);
+        Console.WriteLine("Sending over acceptable exchange assets...");
 
         // Sort each pTrade by their analysis eval
-        return null;
+        return assets;
       }
       catch (Exception e)
       {
@@ -299,15 +247,13 @@ namespace Trading_Bot
     {
       try
       {
-        decimal fee = await GetTradeFee(coinSymbol + "BNB");
-
         // Get the average price of the asset
         Dictionary<string, object> assetParams = new();
-        assetParams.Add("symbol", coinSymbol + "BNB");
+        assetParams.Add("symbol", coinSymbol);
 
-        Task<string> spreadResponse = BClient.SendPublicAsync("/api/v3/ticker/bookTicker", HttpMethod.Get, assetParams);
+        var spreadResponse = await BClient.SendPublicAsync("/api/v3/ticker/bookTicker", HttpMethod.Get, assetParams);
         if (spreadResponse is null) { throw new ArgumentNullException("Response was null"); }
-        JObject spreadResponseJson = JObject.Parse(spreadResponse.Result);
+        JObject spreadResponseJson = JObject.Parse(spreadResponse);
 
         // We want coins with a "big spread" -> the difference between the bid and ask is big
         decimal askPrice = spreadResponseJson["askPrice"].Value<decimal>();
@@ -318,6 +264,23 @@ namespace Trading_Bot
           return AnalysisEval.ABYSMAL;
         else if (askPrice.CompareTo(bidPrice) == 0) // If they're the same, still stay away from it as we haven't accounted for the trade fees yet.
           return AnalysisEval.BAD;
+        else if (askPrice + SPREAD_LEEWAY >= bidPrice)
+          return AnalysisEval.VERY_POOR;
+
+        // If the price of the asset in the last 24 hours is greater than its current avg price...
+        string lastDayResponse = BClient.SendPublicAsync("/api/v3/ticker/24hr", HttpMethod.Get, assetParams).Result;
+        var avgPriceResponse = await BClient.SendPublicAsync("/api/v3/avgPrice", HttpMethod.Get, assetParams);
+
+        JObject lastDayResponseObj = JObject.Parse(lastDayResponse);
+        JObject avgPriceResponseObj = JObject.Parse(avgPriceResponse);
+
+        decimal lastDayAvg = lastDayResponseObj["weightedAvgPrice"].Value<decimal>();
+        decimal avgPrice = avgPriceResponseObj["price"].Value<decimal>();
+
+        if (lastDayAvg > avgPrice)
+          return AnalysisEval.POOR;
+        else if (lastDayAvg < avgPrice)
+          return AnalysisEval.GOOD;
 
         // It's better to always buy "cheap" coins as their spread are usually larger.
         // We also want to buy a high volume of the coins as the profits will be greater.
@@ -327,39 +290,44 @@ namespace Trading_Bot
       catch (Exception e)
       {
         Console.WriteLine(e.Message);
-        // If the coin rating is ever a "none2, an error has occured, immediately rendering useless to us later on in the line, so we skip over.
+        // If the coin rating is ever a "none", an error has occured, immediately rendering useless to us later on in the line, so we skip over.
         return AnalysisEval.NONE;
       }
     }
 
-    private static async Task<bool> PlaceBuyOrder(string symbol)
+    /// <summary>
+    /// Places an order just below the asking price of an asset.
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <returns>True if the operation was successful, False if peration was unsuccessful.</returns>
+    private static async Task<bool> PlaceTakeProfitLimit(string symbol)
     {
       try
       {
-        await Semaphore.WaitAsync();
+        Console.WriteLine("Attempting to Buy: " + symbol + ".");
+        var currentPriceResponse = await BClient.SendPublicAsync("/api/v3/ticker/bookTicker", HttpMethod.Get);
+        JObject currentPriceObj = JObject.Parse(currentPriceResponse);
+        decimal currentPrice = currentPriceObj["bidPrice"].Value<decimal>();
+        decimal minimumAmount = currentPrice + (currentPrice * MAKER_FEE); // The minimum amount of money needed to make a profit.
 
         Dictionary<string, object> param = new();
         param.Add("symbol", symbol);
-        param.Add("side", "BUY");
-        param.Add("type", "MARKET");
-        param.Add("timeInForce", TIME_IN_FORCE);
+        param.Add("side", ORDER_SIDE.BUY);
+        param.Add("type", "TAKE_PROFIT_LIMIT");
+        param.Add("timeInForce", TIME_IN_FORCE.GTC);
         param.Add("quantity", BUY_QUANTITY);
-        param.Add("price", PRICE);
-        var response = BClient.SendSignedAsync("/api/v3/order", HttpMethod.Post);
+        param.Add("price", currentPrice);
+        param.Add("stopPrice", minimumAmount + 0.001m);
+        var response = await BClient.SendSignedAsync("/api/v3/order", HttpMethod.Post, param);
 
-        JObject responseObj = JObject.Parse(response.Result);
-        // Once a successful buy order has been place, insert data into a db.
+        JObject responseObj = JObject.Parse(response);
+        Console.WriteLine("Asset Bought: " + symbol + ".");
         return true;
       }
-      catch(Exception e)
+      catch
       {
-        Console.WriteLine(e.Message);
-        Console.WriteLine("Unable to Buy asset:" + symbol + ".");
+        // Unsuccessful order, swallow exception...
         return false;
-      }
-      finally
-      {
-        Semaphore.Release();
       }
     }
   }

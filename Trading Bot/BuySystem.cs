@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -52,7 +53,7 @@ namespace Trading_Bot
         while (true)
         {
           // First step, look for every coin in the marketplace
-          List<string> availableCoins = GetExchangeInfo().Result;
+          List<string> availableCoins = GetAllAvailableCoins().Result;
 
           // Assign a rating to all the coins that are tardebale in the marketplace.
           var probableBuyOrders = AnalyseAssets(availableCoins).Result;
@@ -80,35 +81,9 @@ namespace Trading_Bot
     }
 
     /// <summary>
-    /// Returns a tuple of the asset name and amount held in mywallet(s).
-    /// </summary>
-    /// <returns></returns>
-    public static async Task<List<(string, decimal)>> GetWallet()
-    {
-      try
-      {
-        await Semaphore.WaitAsync();
-
-        List<(string, decimal)> result = new();
-
-        string response = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
-
-        return result;
-      }
-      catch
-      {
-        return null;
-      }
-      finally
-      {
-        Semaphore.Release();
-      }
-    }
-
-    /// <summary>
     /// Returns an enumarable collection of coins that can be bought / traded for at *this* very moment.
     /// </summary>
-    private static async Task<List<string>> GetExchangeInfo()
+    private static async Task<List<string>> GetAllAvailableCoins()
     {
       try
       {
@@ -247,6 +222,7 @@ namespace Trading_Bot
     {
       try
       {
+        Console.WriteLine("Checking performace of asset: " + coinSymbol);
         // Get the average price of the asset
         Dictionary<string, object> assetParams = new();
         assetParams.Add("symbol", coinSymbol);
@@ -261,11 +237,15 @@ namespace Trading_Bot
 
         // If the asking price is less than the bidding price for the underlaying asset, stay away from it!
         if (askPrice.CompareTo(bidPrice) < 0)
+        {
+          Console.WriteLine($"Asset: {coinSymbol} deemed {AnalysisEval.ABYSMAL}.");
           return AnalysisEval.ABYSMAL;
-        else if (askPrice.CompareTo(bidPrice) == 0) // If they're the same, still stay away from it as we haven't accounted for the trade fees yet.
+        }
+        else if (askPrice.CompareTo(bidPrice) == 0)
+        {
+          Console.WriteLine($"Asset: {coinSymbol} deemed {AnalysisEval.BAD}.");
           return AnalysisEval.BAD;
-        else if (askPrice + SPREAD_LEEWAY >= bidPrice)
-          return AnalysisEval.VERY_POOR;
+        }
 
         // If the price of the asset in the last 24 hours is greater than its current avg price...
         string lastDayResponse = BClient.SendPublicAsync("/api/v3/ticker/24hr", HttpMethod.Get, assetParams).Result;
@@ -278,18 +258,24 @@ namespace Trading_Bot
         decimal avgPrice = avgPriceResponseObj["price"].Value<decimal>();
 
         if (lastDayAvg > avgPrice)
+        {
+          Console.WriteLine($"Asset: {coinSymbol} deemed {AnalysisEval.POOR}.");
           return AnalysisEval.POOR;
+        }
         else if (lastDayAvg < avgPrice)
+        {
+          Console.WriteLine($"Asset: {coinSymbol} deemed {AnalysisEval.GOOD}.");
+          await PlaceTakeProfitLimit(coinSymbol);
           return AnalysisEval.GOOD;
+        }
 
-        // It's better to always buy "cheap" coins as their spread are usually larger.
-        // We also want to buy a high volume of the coins as the profits will be greater.
-
+        Console.WriteLine($"Asset: {coinSymbol} not given an analysis.");
         return AnalysisEval.NONE;
       }
       catch (Exception e)
       {
         Console.WriteLine(e.Message);
+        Console.WriteLine($"Asset: {coinSymbol} not given an analysis.");
         // If the coin rating is ever a "none", an error has occured, immediately rendering useless to us later on in the line, so we skip over.
         return AnalysisEval.NONE;
       }
@@ -304,11 +290,15 @@ namespace Trading_Bot
     {
       try
       {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Dictionary<string, object> tickerParam = new();
+        tickerParam.Add("symbol", symbol);
         Console.WriteLine("Attempting to Buy: " + symbol + ".");
-        var currentPriceResponse = await BClient.SendPublicAsync("/api/v3/ticker/bookTicker", HttpMethod.Get);
+        var currentPriceResponse = await BClient.SendPublicAsync("/api/v3/ticker/bookTicker", HttpMethod.Get, tickerParam);
         JObject currentPriceObj = JObject.Parse(currentPriceResponse);
         decimal currentPrice = currentPriceObj["bidPrice"].Value<decimal>();
-        decimal minimumAmount = currentPrice + (currentPrice * MAKER_FEE); // The minimum amount of money needed to make a profit.
+        decimal minimumAmount = await GetMinimumPriceOfAsset(symbol);
+        minimumAmount = minimumAmount + (minimumAmount * MAKER_FEE); // The minimum amount of money needed to make a profit.
 
         Dictionary<string, object> param = new();
         param.Add("symbol", symbol);
@@ -316,8 +306,8 @@ namespace Trading_Bot
         param.Add("type", "TAKE_PROFIT_LIMIT");
         param.Add("timeInForce", TIME_IN_FORCE.GTC);
         param.Add("quantity", BUY_QUANTITY);
-        param.Add("price", currentPrice);
-        param.Add("stopPrice", minimumAmount + 0.001m);
+        param.Add("price", Math.Round(minimumAmount, 8));
+        param.Add("stopPrice",Math.Round(minimumAmount, 8));
         var response = await BClient.SendSignedAsync("/api/v3/order", HttpMethod.Post, param);
 
         JObject responseObj = JObject.Parse(response);
@@ -327,7 +317,90 @@ namespace Trading_Bot
       catch
       {
         // Unsuccessful order, swallow exception...
+        Console.ForegroundColor = ConsoleColor.Red;
         return false;
+      }
+      finally
+      {
+        Console.ResetColor();
+      }
+    }
+
+    /// <summary>
+    /// Retrieves the current average price for an asset in the last 5 minutes.
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <returns>Returns the current average price for a symbol, i.e. BTCBNB -> 4.0029</returns>
+    private static async Task<decimal> GetCurrentPrice(string symbol)
+    {
+      try
+      {
+        Console.WriteLine($"Getting the current price for '{ symbol }'.");
+        Dictionary<string, object> param = new();
+        param.Add("symbol", symbol);
+        string response = await BClient.SendPublicAsync("/api/v3/avgPrice", HttpMethod.Get, param);
+        if (string.IsNullOrEmpty(response)) { throw new ArgumentNullException("Response is invalid."); }
+        JObject responseObject = JObject.Parse(response);
+        if (responseObject is null) { throw new ArgumentNullException("Response is invalid."); }
+
+        decimal currentPrice = responseObject["price"].Value<decimal>();
+
+        return currentPrice;
+      }
+      catch
+      {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"Couldn't get the current price for '{ symbol }'.");
+        Console.ResetColor();
+        return decimal.MinValue;
+      }
+    }
+
+    /// <summary>
+    /// Returns a JSON Object of the account if successful or not.
+    /// </summary>
+    /// <returns></returns>
+    private static async Task<JObject> GetAccount()
+    {
+      try
+      {
+        string response = await BClient.SendSignedAsync("/api/v1/account", HttpMethod.Get);
+        if (response is null) { throw new ArgumentNullException(); }
+        JObject responseObject = JObject.Parse(response);
+        if (responseObject is null) { throw new ArgumentNullException(); }
+
+        return responseObject;
+      }
+      catch
+      {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Unable to get wallets from account.");
+        Console.ResetColor();
+        return null;
+      }
+    }
+
+    private static async Task<decimal> GetMinimumPriceOfAsset(string symbol)
+    {
+      try
+      {
+        Dictionary<string, object> assetParams = new();
+        assetParams.Add("symbol", symbol);
+        string response = await BClient.SendPublicAsync("/api/v1/exchangeInfo", HttpMethod.Get, assetParams);
+        if (response is null) { throw new ArgumentNullException(); }
+        JObject responseObject = JObject.Parse(response);
+
+        return responseObject["minPrice"].Value<decimal>();
+      }
+      catch
+      {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"Could not get miniumum price needed for the asset: { symbol }.");
+        return decimal.MinValue;
+      }
+      finally
+      {
+        Console.ResetColor();
       }
     }
   }

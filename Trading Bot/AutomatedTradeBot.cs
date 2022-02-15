@@ -36,7 +36,7 @@ namespace Trading_Bot
 
         Console.ForegroundColor = ConsoleColor.White;
 
-        // Set the BClient
+        // Set the Binance Client
         HttpClient hClient = new HttpClient();
         BClient = new BinanceService(hClient);
 
@@ -52,44 +52,9 @@ namespace Trading_Bot
         // Restart program again if application closes...
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(e.Message);
+        Console.ResetColor();
         Console.ReadKey();
       }
     }
-
-    #region Main Procedures
-
-    /// <summary>
-    /// Gets all the available and tradeable coins on the market by returning the product's name, i.e. "BTC"...
-    /// </summary>
-    /// <returns></returns>
-    private static async Task UpdateAvailableCoins()
-    {
-      try
-      {
-        await Semaphore.WaitAsync();
-
-        string response = await BClient.SendSignedAsync("/sapi/v1/capital/config/getall", HttpMethod.Get);
-        var products = JArray.Parse(response);
-
-        foreach (var product in products)
-        {
-          // Not interested in products that are not tradeable.
-          if (!product["trading"].Value<bool>() == true) { continue; }
-
-          // AvailableCoins.Add(product["coin"].Value<string>());
-        }
-      }
-      catch
-      {
-        // Swallow Exception for now, will create logging system
-        // or maybe create frontend for mobile app that sends notifications to my phone, who knows. for now
-        //do everything backened.
-      }
-      finally
-      {
-        Semaphore.Release();
-      }
-    }
-    #endregion
   }
 }

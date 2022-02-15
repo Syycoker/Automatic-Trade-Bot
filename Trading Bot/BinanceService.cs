@@ -14,11 +14,12 @@ namespace BinanceDotNet
 {
   public sealed class BinanceService
   {
+    #region Authentication
     private string baseUrl { get; set; } = AuthenticationConfig.Authentication[AuthenticationConfig.API_URL];
     private string apiKey { get; set; } = AuthenticationConfig.Authentication[AuthenticationConfig.API_KEY];
     private string apiSecret { get; set; } = AuthenticationConfig.Authentication[AuthenticationConfig.API_SECRET];
     private HttpClient httpClient;
-
+    #endregion
     #region Constructors
     public BinanceService(string apiKey, string apiSecret, string baseUrl, HttpClient httpClient)
     {

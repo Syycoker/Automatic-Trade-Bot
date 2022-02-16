@@ -6,3 +6,6 @@ The application will then create a default xml file called "UserAuthentication.x
 * open the file
 * Decide whether you would like to use the "Test" Servers (recommended) and or the live marketplace servers.
 * Fill in the appropriate attribute values with your secure API keys either from the Binance Test server or Marketplace.
+
+# Still Under development as I'm currently working on the best/optimal trading strategy.
+* Adding Frontend (Xamarin) to give a more "user friendly" UI for the user.

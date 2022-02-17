@@ -8,24 +8,14 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Trading_Bot.Enums;
+using Trading_Bot.Logging;
 
 namespace Trading_Bot
 {
-  public enum ORDER_SIDE
-  {
-    NONE = 0,
-    BUY = 1,
-    SELL = 2
-  }
-  public enum TIME_IN_FORCE
-  {
-    NONE = 0,
-    GTC = 1,  // 'Good till cancelled',
-    IOC = 2,  // Immediate or Cancelled,
-    FOK = 3   // Fill or Kill.
-  }
   public static class BuySystem
   {
+    #region Dependencies
     #region Client
     private static BinanceService BClient;
     #endregion
@@ -40,11 +30,14 @@ namespace Trading_Bot
     private static decimal MAKER_FEE = 0.00m;
     private static decimal TAKER_FEE = 0.00m;
     #endregion
+    #region Methods
     private static void SetDependencies()
     {
       BClient = AutomatedTradeBot.BClient;
       SetFees();
     }
+    #endregion
+    #endregion
     public static void AnalyseMarket()
     {
       try
@@ -53,23 +46,7 @@ namespace Trading_Bot
         while (true)
         {
           // First step, look for every coin in the marketplace
-          List<string> availableCoins = GetAllAvailableCoins().Result;
-
-          // Assign a rating to all the coins that are tardebale in the marketplace.
-          var probableBuyOrders = AnalyseAssets(availableCoins).Result;
-
-          foreach (var assetToBuy in probableBuyOrders)
-          {
-            // Only buy assets that are rated 'good' and upwards
-            if (assetToBuy.Item1 >= AnalysisEval.GOOD)
-            {
-              var buyResponse = PlaceTakeProfitLimit(assetToBuy.Item2).Result;
-
-              // If an unsuccessful order...
-              if (buyResponse == false)
-                continue;
-            }
-          }
+          var tradePairs = GetAllAvailableCoins().Result;
         }
       }
       catch(Exception e)
@@ -83,42 +60,49 @@ namespace Trading_Bot
     /// <summary>
     /// Returns an enumarable collection of coins that can be bought / traded for at *this* very moment.
     /// </summary>
-    private static async Task<List<string>> GetAllAvailableCoins()
+    private static async Task<Dictionary<string, (string, int, string, int)>> GetAllAvailableCoins()
     {
       try
       {
-        Console.WriteLine("Getting exchange information...");
+        Log.Msg("Collecting all tradeable assets in the marketplace...", MessageLog.NORMAL);
         // Attempt to get all the 'desirable' coins in the exchange
         await Semaphore.WaitAsync();
 
-        List<string> assets = new();
-        Dictionary<string, decimal> exchange = new();
+        Dictionary<string, (string, int, string, int)> tradePairs = new();
 
         var response = await BClient.SendPublicAsync("/api/v1/exchangeInfo", HttpMethod.Get);
         JObject responseObj = JObject.Parse(response);
 
         foreach (var probableSymbol in responseObj["symbols"])
         {
-          // I only want coins pairs that are trading
+          // Check if the symbol is being actively traded in the marketplace.
           if (probableSymbol["status"].Value<string>().Equals("TRADING"))
           {
-            string pairSymbol = probableSymbol["symbol"].Value<string>();
-            assets.Add(pairSymbol);
+            string tradePairSymbol = probableSymbol["symbol"].Value<string>();
+            string baseAsset = probableSymbol["baseAsset"].Value<string>();
+            string quoteAsset = probableSymbol["quoteAsset"].Value<string>();
+            int basePrecision = probableSymbol["baseAssetPrecision"].Value<int>();
+            int quotePrecision = probableSymbol["quotePrecision"].Value<int>();
+
+            tradePairs.Add(tradePairSymbol,new(baseAsset, basePrecision, quoteAsset, quotePrecision));
           }  
         }
 
-        Console.WriteLine("Sending over acceptable exchange assets...");
+        Log.Msg("Sending over acceptable exchange assets...", MessageLog.NORMAL);
 
-        // Sort each pTrade by their analysis eval
-        return assets;
+        return tradePairs;
       }
       catch (Exception e)
       {
-        Console.WriteLine(e.Message);
-        throw new Exception("Unable to find available coins from Client call.");
+        // Can't work with an empty/invalid/incomplete set of assets, so throw exepction up a level.
+        Log.Msg(e.Message, MessageLog.ERROR);
+        Log.Msg("Unable to find available coins from Client call.", MessageLog.ERROR);
+
+        throw;
       }
       finally
       {
+        // Always release the sempaphore to prevent a "dead-lock"!
         Semaphore.Release();
       }
     }

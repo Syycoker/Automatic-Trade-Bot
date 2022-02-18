@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,7 +89,7 @@ namespace Trading_Bot
 
             (string, (string, int, string, int)) asset = (tradePairSymbol, (baseAsset,basePrecision, quoteAsset, quotePrecision));
 
-            AssetThreadPool.QueueUserWorkItem(new WaitCallback(AssetThread => BeginAnalysis(asset)));
+            AssetThreadPool.QueueUserWorkItem(new WaitCallback(BeginAnalysis));
             tradePairs.Add(tradePairSymbol,new(baseAsset, basePrecision, quoteAsset, quotePrecision));
           }  
         }
@@ -114,47 +113,11 @@ namespace Trading_Bot
       }
     }
 
-    public static void BeginAnalysis(object asset)
+    public static void BeginAnalysis(object tradePairDetails)
     {
       try
       {
-        while (true) //from now on, I'm dequeueing/invoking jobs from the queue.
-        {
-          try
-          {
-            AssetThreadPool.DequeueSemaphore.WaitOne();
 
-            Interlocked.Increment(ref AssetThreadPool.WorkingThreadCount);
-
-            WaitCallback wcb = null;
-
-            lock (AssetThreadPool.AssetQueue)
-            {
-              if (AssetThreadPool.AssetQueue.Count > 0) //help a non-empty queue to get rid of its load
-              {
-                wcb = AssetThreadPool.AssetQueue.Dequeue();
-              }
-            }
-
-            if (wcb != null)
-            {
-              wcb.Invoke(null);
-            }
-            else
-            {
-              Debug.WriteLine("Exiting Thread");
-              //could not dequeue from the queue, terminate the thread
-              Interlocked.Increment(ref AssetThreadPool.FinishedThreads);
-              Interlocked.Decrement(ref AssetThreadPool.RunningThreadCount);
-              return;
-            }
-          }
-          finally
-          {
-            AssetThreadPool.DequeueSemaphore.Release();
-            Interlocked.Decrement(ref AssetThreadPool.WorkingThreadCount);
-          }
-        }
       }
       catch (Exception e)
       {
@@ -321,7 +284,7 @@ namespace Trading_Bot
         param.Add("side", ORDER_SIDE.BUY);
         param.Add("type", "TAKE_PROFIT_LIMIT");
         param.Add("timeInForce", TIME_IN_FORCE.GTC);
-        //param.Add("quantity", BUY_QUANTITY);
+        // param.Add("quantity", BUY_QUANTITY);
         param.Add("price", Math.Round(minimumAmount, 8));
         param.Add("stopPrice",Math.Round(minimumAmount, 8));
         var response = await BClient.SendSignedAsync("/api/v3/order", HttpMethod.Post, param);

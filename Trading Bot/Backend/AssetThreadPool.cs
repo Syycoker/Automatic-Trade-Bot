@@ -13,15 +13,15 @@ namespace Trading_Bot.Backend
   public static class AssetThreadPool
   {
     #region Members
-    public static long WorkingThreadCount = 0;
-    public static long RunningThreadCount = 0;
+    private static long WorkingThreadCount = 0;
+    private static long RunningThreadCount = 0;
     public static long FinishedThreads = 0;
     public static long MaxThreadsUsed = 0;
     public static long TotalQueued = 0;
-    public static Queue<WaitCallback> AssetQueue = new Queue<WaitCallback>();
-    public static int MaximumThreads = 100;
+    private static Queue<WaitCallback> AssetQueue = new Queue<WaitCallback>();
+    private static int MaximumThreads = 100;
     public static List<Thread> AssetThreadPoolWorkers = new();
-    public static Semaphore DequeueSemaphore = new Semaphore(0, 100);
+    static Semaphore DequeueSemaphore = new Semaphore(0, 100);
     #endregion
     #region Methods
 
@@ -40,13 +40,13 @@ namespace Trading_Bot.Backend
 
           if (busyThreads >= AssetThreadPoolWorkers.Count)
           {
-            Log.Msg("Asset Thread Starting...", MessageLog.NORMAL);
+            Log.Msg("Asset Thread Starting...", MessageLog.WARNING);
 
             var param = callBack.Method.GetParameters();
 
-            Thread thread = new Thread(new ParameterizedThreadStart(BuySystem.BeginAnalysis)) { IsBackground = true, Name = param[0].Name };
+            Thread thread = new Thread(new ParameterizedThreadStart(ThreadFunc)) { IsBackground = true };
             AssetThreadPoolWorkers.Add(thread);
-            thread.Start(param[0]);
+            thread.Start(null);
             MaxThreadsUsed++;
             Interlocked.Increment(ref RunningThreadCount);
           }
@@ -71,7 +71,43 @@ namespace Trading_Bot.Backend
 
     public static void ThreadFunc(object obj)
     {
-      
+      while (true) //from now on, I'm dequeueing/invoking jobs from the queue.
+      {
+        try
+        {
+          DequeueSemaphore.WaitOne();
+
+          Interlocked.Increment(ref WorkingThreadCount);
+
+          WaitCallback wcb = null;
+
+          lock (AssetQueue)
+          {
+            if (AssetQueue.Count > 0) //help a non-empty queue to get rid of its load
+            {
+              wcb = AssetQueue.Dequeue();
+            }
+          }
+
+          if (wcb != null)
+          {
+            wcb.Invoke(null);
+          }
+          else
+          {
+            Debug.WriteLine("Exiting Thread");
+            //could not dequeue from the queue, terminate the thread
+            Interlocked.Increment(ref FinishedThreads);
+            Interlocked.Decrement(ref RunningThreadCount);
+            return;
+          }
+        }
+        finally
+        {
+          DequeueSemaphore.Release();
+          Interlocked.Decrement(ref WorkingThreadCount);
+        }
+      }
     }
     #endregion
   }

@@ -89,7 +89,7 @@ namespace Trading_Bot
 
             (string, (string, int, string, int)) asset = (tradePairSymbol, (baseAsset,basePrecision, quoteAsset, quotePrecision));
 
-            AssetThreadPool.QueueUserWorkItem(new WaitCallback(BeginAnalysis));
+            AssetThreadPool.QueueUserWorkItem(new WaitCallback(x => BeginAnalysis(asset)));
             tradePairs.Add(tradePairSymbol,new(baseAsset, basePrecision, quoteAsset, quotePrecision));
           }  
         }
@@ -117,7 +117,7 @@ namespace Trading_Bot
     {
       try
       {
-
+        Console.WriteLine(tradePairDetails);
       }
       catch (Exception e)
       {

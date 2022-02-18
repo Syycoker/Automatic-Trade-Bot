@@ -9,6 +9,7 @@ using BinanceDotNet;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Trading_Bot.Logging;
 
 namespace Trading_Bot
 {
@@ -34,14 +35,13 @@ namespace Trading_Bot
         // Initialise the authorisation codes.
         AuthenticationConfig.Initialise();
 
-        Console.ForegroundColor = ConsoleColor.White;
-
         // Set the Binance Client
         HttpClient hClient = new HttpClient();
         BClient = new BinanceService(hClient);
 
-        Console.WriteLine("Program Starting...");
+        Log.Msg("Program Starting...", Enums.MessageLog.NORMAL);
 
+        // Start the buying system.
         Thread buyThread = new Thread(BuySystem.AnalyseMarket);
         buyThread.Start();
       }
@@ -50,9 +50,8 @@ namespace Trading_Bot
       {
         // Send a push notification to phone if any error arises.
         // Restart program again if application closes...
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine(e.Message);
-        Console.ResetColor();
+        Log.Msg(e.Message, Enums.MessageLog.ERROR);
+        Log.Msg("Main Thread Exiting...", Enums.MessageLog.ERROR);
         Console.ReadKey();
       }
     }

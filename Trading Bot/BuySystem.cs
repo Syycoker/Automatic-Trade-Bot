@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Trading_Bot.Backend;
 using Trading_Bot.Enums;
 using Trading_Bot.Logging;
 
@@ -23,8 +25,7 @@ namespace Trading_Bot
     private static SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
     #endregion
     #region Constants
-    private const decimal SPREAD_LEEWAY = 0.00001m;
-    private const int BUY_QUANTITY = 1;
+    private const long TIME_TO_CHECK = 60000;
     #endregion
     #region Fees
     private static decimal MAKER_FEE = 0.00m;
@@ -34,8 +35,11 @@ namespace Trading_Bot
     private static void SetDependencies()
     {
       BClient = AutomatedTradeBot.BClient;
-      SetFees();
+      GetAccountFees();
     }
+    #endregion
+    #region Properties
+    public static Dictionary<string, (string, int, string, int)> TradePairs { get; set; } = new();
     #endregion
     #endregion
     public static void AnalyseMarket()
@@ -45,7 +49,7 @@ namespace Trading_Bot
         SetDependencies();
         while (true)
         {
-          // First step, look for every coin in the marketplace
+          // Get all the available trade pairs currently in the marketplace.
           var tradePairs = GetAllAvailableCoins().Result;
         }
       }
@@ -84,6 +88,9 @@ namespace Trading_Bot
             int basePrecision = probableSymbol["baseAssetPrecision"].Value<int>();
             int quotePrecision = probableSymbol["quotePrecision"].Value<int>();
 
+            (string, (string, int, string, int)) asset = (tradePairSymbol, (baseAsset,basePrecision, quoteAsset, quotePrecision));
+
+            AssetThreadPool.QueueUserWorkItem(new WaitCallback(AssetThread => BeginAnalysis(asset)));
             tradePairs.Add(tradePairSymbol,new(baseAsset, basePrecision, quoteAsset, quotePrecision));
           }  
         }
@@ -107,13 +114,60 @@ namespace Trading_Bot
       }
     }
 
+    public static void BeginAnalysis(object asset)
+    {
+      try
+      {
+        while (true) //from now on, I'm dequeueing/invoking jobs from the queue.
+        {
+          try
+          {
+            AssetThreadPool.DequeueSemaphore.WaitOne();
+
+            Interlocked.Increment(ref AssetThreadPool.WorkingThreadCount);
+
+            WaitCallback wcb = null;
+
+            lock (AssetThreadPool.AssetQueue)
+            {
+              if (AssetThreadPool.AssetQueue.Count > 0) //help a non-empty queue to get rid of its load
+              {
+                wcb = AssetThreadPool.AssetQueue.Dequeue();
+              }
+            }
+
+            if (wcb != null)
+            {
+              wcb.Invoke(null);
+            }
+            else
+            {
+              Debug.WriteLine("Exiting Thread");
+              //could not dequeue from the queue, terminate the thread
+              Interlocked.Increment(ref AssetThreadPool.FinishedThreads);
+              Interlocked.Decrement(ref AssetThreadPool.RunningThreadCount);
+              return;
+            }
+          }
+          finally
+          {
+            AssetThreadPool.DequeueSemaphore.Release();
+            Interlocked.Decrement(ref AssetThreadPool.WorkingThreadCount);
+          }
+        }
+      }
+      catch (Exception e)
+      {
+        Log.Msg(e.Message, MessageLog.ERROR);
+      }
+    }
 
     /// <summary>
-    /// Sets the fees for your account, will be taken into account to determine whether the trade fee plus the asset will be a 'good' trade.
+    /// Gets the fees for your specific account, which will be taken into account to determine whether the trade fee plus the asset will be a 'good' trade.
     /// </summary>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
-    private static void SetFees()
+    private static void GetAccountFees()
     {
       try
       {
@@ -133,38 +187,16 @@ namespace Trading_Bot
       }
     }
 
-    /// <summary>
-    /// Returns all coins available to trade on the Bianance marketplace.
-    /// </summary>
-    /// <returns></returns>
-    private static async Task<List<string>> GetAllTradeableCoinsInExchange()
+    private static async Task<decimal> GetAssetDetails()
     {
       try
       {
-        await Semaphore.WaitAsync();
-        string response = BClient.SendSignedAsync("/sapi/v1/capital/config/getall", HttpMethod.Get).Result;
-        var products = JArray.Parse(response);
-
-        List<string> coins = new();
-
-        foreach (var product in products)
-        {
-          // Not interested in products that are not tradeable.
-          if (!product["trading"].Value<bool>() == true) { continue; }
-
-          coins.Add(product["coin"].Value<string>());
-        }
-
-        return coins;
+        return decimal.MinValue;
       }
-      catch(Exception e)
+      catch (Exception e)
       {
-        Console.WriteLine(e.Message);
-        return new List<string>();
-      }
-      finally
-      {
-        Semaphore.Release();
+        Log.Msg(e.Message, MessageLog.ERROR);
+        return decimal.MinValue;
       }
     }
 
@@ -289,7 +321,7 @@ namespace Trading_Bot
         param.Add("side", ORDER_SIDE.BUY);
         param.Add("type", "TAKE_PROFIT_LIMIT");
         param.Add("timeInForce", TIME_IN_FORCE.GTC);
-        param.Add("quantity", BUY_QUANTITY);
+        //param.Add("quantity", BUY_QUANTITY);
         param.Add("price", Math.Round(minimumAmount, 8));
         param.Add("stopPrice",Math.Round(minimumAmount, 8));
         var response = await BClient.SendSignedAsync("/api/v3/order", HttpMethod.Post, param);

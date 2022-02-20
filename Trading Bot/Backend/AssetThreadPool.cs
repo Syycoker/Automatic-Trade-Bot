@@ -13,100 +13,71 @@ namespace Trading_Bot.Backend
   public static class AssetThreadPool
   {
     #region Members
-    private static long WorkingThreadCount = 0;
-    private static long RunningThreadCount = 0;
+    public static long WorkingThreadCount = 0;
+    public static long RunningThreadCount = 0;
     public static long FinishedThreads = 0;
     public static long MaxThreadsUsed = 0;
     public static long TotalQueued = 0;
-    private static Queue<WaitCallback> AssetQueue = new Queue<WaitCallback>();
+    private static Queue<(string, (string, int, string, int))> AssetQueue = new();
     private static int MaximumThreads = 100;
     public static List<Thread> AssetThreadPoolWorkers = new();
-    static Semaphore DequeueSemaphore = new Semaphore(0, 100);
+    private static Semaphore semaphore = new Semaphore(1,1);
+
+    private static Thread PollThread { get; set; }
     #endregion
     #region Methods
 
-    public static bool QueueUserWorkItem(WaitCallback callBack)
+    public static bool Run((string, (string,int,string,int)) asset)
     {
-      if (callBack is null)
-        throw new Exception("Callback delegate is null.");
-
-      lock (AssetQueue)
+      try
       {
-        AssetQueue.Enqueue(callBack);
+        semaphore.WaitOne();
 
-        if (MaximumThreads > AssetThreadPoolWorkers.Count)
+        lock (AssetThreadPoolWorkers)
         {
-          long busyThreads = Interlocked.Read(ref WorkingThreadCount);
-
-          if (busyThreads >= AssetThreadPoolWorkers.Count)
+          if (AssetThreadPoolWorkers.Count >= MaximumThreads)
           {
-            Log.Msg("Asset Thread Starting...", MessageLog.WARNING);
-
-            var param = callBack.Method.GetParameters();
-
-            Thread thread = new Thread(new ParameterizedThreadStart(ThreadFunc)) { IsBackground = true };
-            AssetThreadPoolWorkers.Add(thread);
-            thread.Start(null);
-            MaxThreadsUsed++;
-            Interlocked.Increment(ref RunningThreadCount);
-          }
-        }
-        DequeueSemaphore.Release();
-      }
-      return true;
-    }
-
-    public static bool HasRunningJobs()
-    {
-      bool running = 0 != Interlocked.Read(ref WorkingThreadCount);
-
-      if (running)
-        return true;
-
-      lock (AssetQueue)
-      {
-        return 0 != AssetQueue.Count && 0 != RunningThreadCount;
-      }
-    }
-
-    public static void ThreadFunc(object obj)
-    {
-      while (true) //from now on, I'm dequeueing/invoking jobs from the queue.
-      {
-        try
-        {
-          DequeueSemaphore.WaitOne();
-
-          Interlocked.Increment(ref WorkingThreadCount);
-
-          WaitCallback wcb = null;
-
-          lock (AssetQueue)
-          {
-            if (AssetQueue.Count > 0) //help a non-empty queue to get rid of its load
+            if (PollThread is null)
             {
-              wcb = AssetQueue.Dequeue();
+              PollThread = new Thread(PollQueue) { IsBackground = true };
+              PollThread.Start();
             }
+
+            Log.Msg("Thread pool is full, queuing asset.", MessageLog.WARNING);
+            AssetQueue.Enqueue(asset);
+            return true;
           }
 
-          if (wcb != null)
-          {
-            wcb.Invoke(null);
-          }
-          else
-          {
-            Debug.WriteLine("Exiting Thread");
-            //could not dequeue from the queue, terminate the thread
-            Interlocked.Increment(ref FinishedThreads);
-            Interlocked.Decrement(ref RunningThreadCount);
-            return;
-          }
+          Thread assetThread = new Thread(() => BuySystem.BeginAnalysis(asset)) { IsBackground = true, Name = asset.Item1 };
+          assetThread.Start();
+
+          AssetThreadPoolWorkers.Add(assetThread);
+          Interlocked.Increment(ref RunningThreadCount);
         }
-        finally
-        {
-          DequeueSemaphore.Release();
-          Interlocked.Decrement(ref WorkingThreadCount);
-        }
+
+        return true;
+      }
+      catch(Exception e)
+      {
+        Log.Msg(e.Message, MessageLog.ERROR);
+        return false;
+      }
+      finally
+      {
+        semaphore.Release();
+      }
+    }
+
+    private static void PollQueue()
+    {
+      // keep polling the queue till there's an occupiable space within the assetthreadpool
+      while (true)
+      {
+        if (AssetThreadPoolWorkers.Count >= MaximumThreads) { Thread.Sleep(1); continue; }
+
+        if(AssetQueue.Count > 0)
+          // Run the dequeued asset.
+          Run(AssetQueue.Dequeue());
       }
     }
     #endregion

@@ -20,7 +20,7 @@ namespace Trading_Bot.Logging
           break;
 
         case MessageLog.WARNING:
-          Console.ForegroundColor = ConsoleColor.Red;
+          Console.ForegroundColor = ConsoleColor.DarkYellow;
           Console.WriteLine(message);
           break;
 

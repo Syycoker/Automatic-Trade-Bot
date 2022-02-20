@@ -54,6 +54,7 @@ namespace Trading_Bot
       }
       catch(Exception e)
       {
+        
         // If an exception has occured here, send a notification!!
         Console.WriteLine("Error has occured when analysing marketplace.");
         Console.WriteLine(e.Message);
@@ -89,12 +90,10 @@ namespace Trading_Bot
 
             (string, (string, int, string, int)) asset = (tradePairSymbol, (baseAsset,basePrecision, quoteAsset, quotePrecision));
 
-            AssetThreadPool.QueueUserWorkItem(new WaitCallback(x => BeginAnalysis(asset)));
+            AssetThreadPool.Run(asset);
             tradePairs.Add(tradePairSymbol,new(baseAsset, basePrecision, quoteAsset, quotePrecision));
           }  
         }
-
-        Log.Msg("Sending over acceptable exchange assets...", MessageLog.NORMAL);
 
         return tradePairs;
       }
@@ -103,6 +102,8 @@ namespace Trading_Bot
         // Can't work with an empty/invalid/incomplete set of assets, so throw exepction up a level.
         Log.Msg(e.Message, MessageLog.ERROR);
         Log.Msg("Unable to find available coins from Client call.", MessageLog.ERROR);
+
+        Debug.WriteLine($"Finished: {AssetThreadPool.FinishedThreads} Queued: { AssetThreadPool.TotalQueued } Max Threads Used: { AssetThreadPool.MaxThreadsUsed}");
 
         throw;
       }
@@ -115,13 +116,24 @@ namespace Trading_Bot
 
     public static void BeginAnalysis(object tradePairDetails)
     {
+      // Cast object into asset Tuple
+      (string, (string, int, string, int)) asset = (ValueTuple<string, (string, int, string, int)>)tradePairDetails;
       try
       {
-        Console.WriteLine(tradePairDetails);
+        Semaphore.Wait();
+        Log.Msg($"Beginning Analysis: '{ tradePairDetails }'.", MessageLog.NORMAL);
+        Semaphore.Release();
       }
       catch (Exception e)
       {
         Log.Msg(e.Message, MessageLog.ERROR);
+      }
+      finally
+      {
+        // Find the thread with the name and delete it from the currently working threads to free up space...
+        Thread probableThread = AssetThreadPool.AssetThreadPoolWorkers.Find(t => t.Name.ToLower().Equals(asset.Item1.ToLower()));
+        if (probableThread is null) { Log.Msg($"Cannot dispose thread containing '{ asset.Item1 }'.", MessageLog.ERROR); }
+        AssetThreadPool.AssetThreadPoolWorkers.Remove(probableThread);
       }
     }
 
@@ -134,32 +146,22 @@ namespace Trading_Bot
     {
       try
       {
-        var feesResponse = BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
+        Task.Run(async () =>
+        {
+          var feesResponse = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
 
-        if (feesResponse is null || string.IsNullOrEmpty(feesResponse.Result))
-          throw new ArgumentNullException("Unable to set fees for binance account.");
+          if (feesResponse is null || string.IsNullOrEmpty(feesResponse))
+            throw new ArgumentNullException("Unable to set fees for binance account.");
 
-        JObject feeResponseObj = JObject.Parse(feesResponse.Result);
+          JObject feeResponseObj = JObject.Parse(feesResponse);
 
-        MAKER_FEE = feeResponseObj["makerCommission"].Value<decimal>() / 10000;
-        TAKER_FEE = feeResponseObj["takerCommission"].Value<decimal>() / 10000;
+          MAKER_FEE = feeResponseObj["makerCommission"].Value<decimal>() / 10000;
+          TAKER_FEE = feeResponseObj["takerCommission"].Value<decimal>() / 10000;
+        }).GetAwaiter().GetResult();
       }
       catch(Exception e)
       {
         Console.WriteLine(e.Message);
-      }
-    }
-
-    private static async Task<decimal> GetAssetDetails()
-    {
-      try
-      {
-        return decimal.MinValue;
-      }
-      catch (Exception e)
-      {
-        Log.Msg(e.Message, MessageLog.ERROR);
-        return decimal.MinValue;
       }
     }
 

@@ -116,13 +116,13 @@ namespace Trading_Bot
 
     public static void BeginAnalysis(object tradePairDetails)
     {
+      Semaphore.Wait();
       // Cast object into asset Tuple
-      (string, (string, int, string, int)) asset = (ValueTuple<string, (string, int, string, int)>)tradePairDetails;
+      (string, (string, int, string, int), Thread) asset = (ValueTuple<string, (string, int, string, int), Thread>)tradePairDetails;
+
       try
       {
-        Semaphore.Wait();
-        Log.Msg($"Beginning Analysis: '{ tradePairDetails }'.", MessageLog.NORMAL);
-        Semaphore.Release();
+        Log.Msg($"Beginning Analysis On: '{ asset.Item1 }'.", MessageLog.NORMAL);
       }
       catch (Exception e)
       {
@@ -131,9 +131,9 @@ namespace Trading_Bot
       finally
       {
         // Find the thread with the name and delete it from the currently working threads to free up space...
-        Thread probableThread = AssetThreadPool.AssetThreadPoolWorkers.Find(t => t.Name.ToLower().Equals(asset.Item1.ToLower()));
-        if (probableThread is null) { Log.Msg($"Cannot dispose thread containing '{ asset.Item1 }'.", MessageLog.ERROR); }
-        AssetThreadPool.AssetThreadPoolWorkers.Remove(probableThread);
+        if (asset.Item3 is null) { Log.Msg($"Cannot dispose thread containing '{ asset.Item1 }'.", MessageLog.ERROR); }
+        AssetThreadPool.AssetThreadPoolWorkers.Remove(asset.Item3);
+        Semaphore.Release();
       }
     }
 

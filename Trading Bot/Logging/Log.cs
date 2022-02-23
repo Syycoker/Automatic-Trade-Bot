@@ -11,26 +11,29 @@ namespace Trading_Bot.Logging
   {
     public static void Msg(string message, MessageLog logType)
     {
-      switch (logType)
+      lock (Console.Out)
       {
-        case MessageLog.NONE:
-        case MessageLog.NORMAL:
-          Console.ForegroundColor = ConsoleColor.White;
-          Console.WriteLine(message);
-          break;
+        switch (logType)
+        {
+          case MessageLog.NONE:
+          case MessageLog.NORMAL:
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(message);
+            break;
 
-        case MessageLog.WARNING:
-          Console.ForegroundColor = ConsoleColor.DarkYellow;
-          Console.WriteLine(message);
-          break;
+          case MessageLog.WARNING:
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine(message);
+            break;
 
-        case MessageLog.ERROR:
-          Console.ForegroundColor = ConsoleColor.DarkRed;
-          Console.WriteLine(message);
-          break;
+          case MessageLog.ERROR:
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine(message);
+            break;
+        }
+
+        Console.ResetColor();
       }
-
-      Console.ResetColor();
     }
   }
 }

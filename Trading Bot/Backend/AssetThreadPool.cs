@@ -31,29 +31,27 @@ namespace Trading_Bot.Backend
     {
       try
       {
-        semaphore.WaitOne();
+        Console.WriteLine($"Threads currently running: { AssetThreadPoolWorkers.Count }.");
 
-        lock (AssetThreadPoolWorkers)
+        if (AssetThreadPoolWorkers.Count >= MaximumThreads)
         {
-          if (AssetThreadPoolWorkers.Count >= MaximumThreads)
+          if (PollThread is null)
           {
-            if (PollThread is null)
-            {
-              PollThread = new Thread(PollQueue) { IsBackground = true };
-              PollThread.Start();
-            }
-
-            Log.Msg("Thread pool is full, queuing asset.", MessageLog.WARNING);
-            AssetQueue.Enqueue(asset);
-            return true;
+            PollThread = new Thread(PollQueue) { IsBackground = true };
+            PollThread.Start();
           }
 
-          Thread assetThread = new Thread(() => BuySystem.BeginAnalysis(asset)) { IsBackground = true, Name = asset.Item1 };
-          assetThread.Start();
-
-          AssetThreadPoolWorkers.Add(assetThread);
-          Interlocked.Increment(ref RunningThreadCount);
+          Log.Msg("Thread pool is full, queuing asset.", MessageLog.WARNING);
+          AssetQueue.Enqueue(asset);
+          return true;
         }
+
+        Thread assetThread = new Thread(new ParameterizedThreadStart(BuySystem.BeginAnalysis)) { IsBackground = true, Name = asset.Item1 };
+        (string, (string, int, string, int), Thread) threadAsset = new ValueTuple<string, (string, int, string, int), Thread>(asset.Item1, asset.Item2, assetThread);
+        assetThread.Start(threadAsset);
+
+        AssetThreadPoolWorkers.Add(assetThread);
+        Interlocked.Increment(ref RunningThreadCount);
 
         return true;
       }
@@ -61,10 +59,6 @@ namespace Trading_Bot.Backend
       {
         Log.Msg(e.Message, MessageLog.ERROR);
         return false;
-      }
-      finally
-      {
-        semaphore.Release();
       }
     }
 

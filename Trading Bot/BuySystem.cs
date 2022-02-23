@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Trading_Bot.Backend;
 using Trading_Bot.Enums;
 using Trading_Bot.Logging;
 
@@ -21,7 +20,7 @@ namespace Trading_Bot
     private static BinanceService BClient;
     #endregion
     #region Thread Safety
-    private static SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
+    private static Mutex mutex = new();
     #endregion
     #region Constants
     private const long TIME_TO_CHECK = 60000;
@@ -70,7 +69,6 @@ namespace Trading_Bot
       {
         Log.Msg("Collecting all tradeable assets in the marketplace...", MessageLog.NORMAL);
         // Attempt to get all the 'desirable' coins in the exchange
-        await Semaphore.WaitAsync();
 
         Dictionary<string, (string, int, string, int)> tradePairs = new();
 
@@ -89,9 +87,9 @@ namespace Trading_Bot
             int quotePrecision = probableSymbol["quotePrecision"].Value<int>();
 
             (string, (string, int, string, int)) asset = (tradePairSymbol, (baseAsset,basePrecision, quoteAsset, quotePrecision));
-
-            AssetThreadPool.Run(asset);
             tradePairs.Add(tradePairSymbol,new(baseAsset, basePrecision, quoteAsset, quotePrecision));
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(BeginAnalysis), asset);
           }  
         }
 
@@ -103,22 +101,15 @@ namespace Trading_Bot
         Log.Msg(e.Message, MessageLog.ERROR);
         Log.Msg("Unable to find available coins from Client call.", MessageLog.ERROR);
 
-        Debug.WriteLine($"Finished: {AssetThreadPool.FinishedThreads} Queued: { AssetThreadPool.TotalQueued } Max Threads Used: { AssetThreadPool.MaxThreadsUsed}");
-
         throw;
-      }
-      finally
-      {
-        // Always release the sempaphore to prevent a "dead-lock"!
-        Semaphore.Release();
       }
     }
 
     public static void BeginAnalysis(object tradePairDetails)
     {
-      Semaphore.Wait();
+      mutex.WaitOne();
       // Cast object into asset Tuple
-      (string, (string, int, string, int), Thread) asset = (ValueTuple<string, (string, int, string, int), Thread>)tradePairDetails;
+      (string, (string, int, string, int)) asset = (ValueTuple<string, (string, int, string, int)>)tradePairDetails;
 
       try
       {
@@ -130,10 +121,7 @@ namespace Trading_Bot
       }
       finally
       {
-        // Find the thread with the name and delete it from the currently working threads to free up space...
-        if (asset.Item3 is null) { Log.Msg($"Cannot dispose thread containing '{ asset.Item1 }'.", MessageLog.ERROR); }
-        AssetThreadPool.AssetThreadPoolWorkers.Remove(asset.Item3);
-        Semaphore.Release();
+        mutex.ReleaseMutex();
       }
     }
 
@@ -169,7 +157,7 @@ namespace Trading_Bot
     {
       try
       {
-        await Semaphore.WaitAsync();
+        mutex.WaitOne();
 
         List<(AnalysisEval, string)> tempArr = new();
 

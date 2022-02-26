@@ -19,22 +19,11 @@ namespace Trading_Bot
     #region Client
     private static BinanceService BClient;
     #endregion
-    #region Thread Safety
-    private static Mutex mutex = new();
-    #endregion
-    #region Constants
-    private const long TIME_TO_CHECK = 60000;
-    #endregion
-    #region Fees
+    #region DO NOT TOUCH
+    private static long AssetsChecked { get; set; } = 0;
+    private static decimal TotalPriceChange { get; set; } = 0.00000000m;
     private static decimal MAKER_FEE = 0.00m;
     private static decimal TAKER_FEE = 0.00m;
-    #endregion
-    #region Methods
-    private static void SetDependencies()
-    {
-      BClient = AutomatedTradeBot.BClient;
-      GetAccountFees();
-    }
     #endregion
     #region Properties
     public static Dictionary<string, (string, int, string, int)> TradePairs { get; set; } = new();
@@ -44,19 +33,46 @@ namespace Trading_Bot
     {
       try
       {
-        SetDependencies();
+        // Set the Client.
+        BClient = AutomatedTradeBot.BClient;
+
+        var fees = GetAccountFees();
+
         while (true)
-        {
+        {        
           // Get all the available trade pairs currently in the marketplace.
           var tradePairs = GetAllAvailableCoins().Result;
         }
       }
       catch(Exception e)
       {
-        
-        // If an exception has occured here, send a notification!!
-        Console.WriteLine("Error has occured when analysing marketplace.");
-        Console.WriteLine(e.Message);
+        Log.Msg(e.Message, MessageLog.ERROR);
+        Log.Msg("Error has occured when analysing marketplace.", MessageLog.ERROR);
+      }
+    }
+
+    /// <summary>
+    /// Gets the fees for your specific account, which will be taken into account to determine whether the trade fee plus the asset will be a 'good' trade.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    private static async Task GetAccountFees()
+    {
+      try
+      {
+        var feesResponse = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
+
+        if (feesResponse is null || string.IsNullOrEmpty(feesResponse))
+          throw new ArgumentNullException("Unable to set fees for binance account.");
+
+        JObject feeResponseObj = JObject.Parse(feesResponse);
+
+        MAKER_FEE = feeResponseObj["makerCommission"].Value<decimal>() / 10000;
+        TAKER_FEE = feeResponseObj["takerCommission"].Value<decimal>() / 10000;
+      }
+      catch (Exception e)
+      {
+        Log.Msg(e.Message, MessageLog.ERROR);
       }
     }
 
@@ -93,6 +109,8 @@ namespace Trading_Bot
           }  
         }
 
+        // Important to reset once all Assets have been checked.
+        AssetsChecked = 0;
         return tradePairs;
       }
       catch (Exception e)
@@ -105,79 +123,47 @@ namespace Trading_Bot
       }
     }
 
-    public static void BeginAnalysis(object tradePairDetails)
+    public static async void BeginAnalysis(object tradePairDetails)
     {
-      mutex.WaitOne();
       // Cast object into asset Tuple
       (string, (string, int, string, int)) asset = (ValueTuple<string, (string, int, string, int)>)tradePairDetails;
 
       try
       {
+        // Intentionally stopping too many requests from being made, will start using wbsockets when infrastructure is ready.
+        Thread.Sleep(1000);
         Log.Msg($"Beginning Analysis On: '{ asset.Item1 }'.", MessageLog.NORMAL);
+
+        Dictionary<string, object> twentyFourHourPerformanceParams = new();
+        twentyFourHourPerformanceParams.Add("symbol", asset.Item1);
+        string twentyFourHourPerformanceResponseString = await BClient.SendPublicAsync("/api/v3/ticker/24hr", HttpMethod.Get, twentyFourHourPerformanceParams);
+        JObject twentyFourHourPerforamce = JObject.Parse(twentyFourHourPerformanceResponseString);
+
+        decimal lastPrice = twentyFourHourPerforamce["lastPrice"].Value<decimal>();
+        decimal openPrice = twentyFourHourPerforamce["openPrice"].Value<decimal>();
+
+        decimal priceChangePercent = (lastPrice - openPrice) / openPrice;
+
+        TotalPriceChange += priceChangePercent;
+        AssetsChecked++;
+
+        decimal averagePriceChange = TotalPriceChange / AssetsChecked;
+
+        // If the coin doesn't beat the average price change, don't consider the coin.
+        if (priceChangePercent < averagePriceChange) { return; }
+
+        // Only want asset if the price change is equal to the average price change or more.
+        // Get the asset's current bid / ask price
+        Dictionary<string, object> assetInforParams = new();
+        assetInforParams.Add("symbol", asset.Item1);
+
+        string assetInfoResponse = await BClient.SendPublicAsync("/api/v1/exchangeInfo", HttpMethod.Get, assetInforParams);
+        JObject assetInfo = JObject.Parse(assetInfoResponse);
       }
       catch (Exception e)
       {
         Log.Msg(e.Message, MessageLog.ERROR);
-      }
-      finally
-      {
-        mutex.ReleaseMutex();
-      }
-    }
-
-    /// <summary>
-    /// Gets the fees for your specific account, which will be taken into account to determine whether the trade fee plus the asset will be a 'good' trade.
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    private static void GetAccountFees()
-    {
-      try
-      {
-        Task.Run(async () =>
-        {
-          var feesResponse = await BClient.SendSignedAsync("/api/v3/account", HttpMethod.Get);
-
-          if (feesResponse is null || string.IsNullOrEmpty(feesResponse))
-            throw new ArgumentNullException("Unable to set fees for binance account.");
-
-          JObject feeResponseObj = JObject.Parse(feesResponse);
-
-          MAKER_FEE = feeResponseObj["makerCommission"].Value<decimal>() / 10000;
-          TAKER_FEE = feeResponseObj["takerCommission"].Value<decimal>() / 10000;
-        }).GetAwaiter().GetResult();
-      }
-      catch(Exception e)
-      {
-        Console.WriteLine(e.Message);
-      }
-    }
-
-    private static async Task<List<(AnalysisEval, string)>> AnalyseAssets(List<string> coins)
-    {
-      try
-      {
-        mutex.WaitOne();
-
-        List<(AnalysisEval, string)> tempArr = new();
-
-        // best to use an anonymous function
-        coins.ForEach(c =>
-        {
-          // Get the perforamce of the coin and assign it an enum value.
-          tempArr.Add(new(GetCoinPerformace(c).Result, c));
-        });
-
-        // Sort the deemable Coins by analysiseval, lowest to highest
-        List<(AnalysisEval, string)> deemableCoins = new();
-        deemableCoins = tempArr.OrderBy(c => c.Item1).ToList();
-
-        return deemableCoins;
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine(e.Message);
-        return null;
+        Log.Msg($"Unable to analyse: '{ asset.Item1 }.' ", MessageLog.ERROR);
       }
     }
 
@@ -266,7 +252,7 @@ namespace Trading_Bot
         var currentPriceResponse = await BClient.SendPublicAsync("/api/v3/ticker/bookTicker", HttpMethod.Get, tickerParam);
         JObject currentPriceObj = JObject.Parse(currentPriceResponse);
         decimal currentPrice = currentPriceObj["bidPrice"].Value<decimal>();
-        decimal minimumAmount = await GetMinimumPriceOfAsset(symbol);
+        decimal minimumAmount = 0.00m;// = await GetMinimumPriceOfAsset(symbol);
         minimumAmount = minimumAmount + (minimumAmount * MAKER_FEE); // The minimum amount of money needed to make a profit.
 
         Dictionary<string, object> param = new();
@@ -322,54 +308,6 @@ namespace Trading_Bot
         Console.WriteLine($"Couldn't get the current price for '{ symbol }'.");
         Console.ResetColor();
         return decimal.MinValue;
-      }
-    }
-
-    /// <summary>
-    /// Returns a JSON Object of the account if successful or not.
-    /// </summary>
-    /// <returns></returns>
-    private static async Task<JObject> GetAccount()
-    {
-      try
-      {
-        string response = await BClient.SendSignedAsync("/api/v1/account", HttpMethod.Get);
-        if (response is null) { throw new ArgumentNullException(); }
-        JObject responseObject = JObject.Parse(response);
-        if (responseObject is null) { throw new ArgumentNullException(); }
-
-        return responseObject;
-      }
-      catch
-      {
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("Unable to get wallets from account.");
-        Console.ResetColor();
-        return null;
-      }
-    }
-
-    private static async Task<decimal> GetMinimumPriceOfAsset(string symbol)
-    {
-      try
-      {
-        Dictionary<string, object> assetParams = new();
-        assetParams.Add("symbol", symbol);
-        string response = await BClient.SendPublicAsync("/api/v1/exchangeInfo", HttpMethod.Get, assetParams);
-        if (response is null) { throw new ArgumentNullException(); }
-        JObject responseObject = JObject.Parse(response);
-
-        return responseObject["minPrice"].Value<decimal>();
-      }
-      catch
-      {
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"Could not get miniumum price needed for the asset: { symbol }.");
-        return decimal.MinValue;
-      }
-      finally
-      {
-        Console.ResetColor();
       }
     }
   }

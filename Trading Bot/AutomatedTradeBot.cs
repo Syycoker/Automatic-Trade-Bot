@@ -36,7 +36,7 @@ namespace Trading_Bot
         AuthenticationConfig.Initialise();
 
         // Set the Binance Client
-        HttpClient hClient = new HttpClient();
+        HttpClient hClient = new HttpClient() { Timeout = TimeSpan.FromMilliseconds(1000000) };
         BClient = new BinanceService(hClient);
 
         Log.Msg("Program Starting...", Enums.MessageLog.NORMAL);

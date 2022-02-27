@@ -36,7 +36,7 @@ namespace Trading_Bot
         AuthenticationConfig.Initialise();
 
         // Set the Binance Client
-        HttpClient hClient = new HttpClient() { Timeout = TimeSpan.FromMilliseconds(1000000) };
+        HttpClient hClient = new HttpClient();
         BClient = new BinanceService(hClient);
 
         Log.Msg("Program Starting...", Enums.MessageLog.NORMAL);
@@ -44,6 +44,9 @@ namespace Trading_Bot
         // Start the buying system.
         Thread buyThread = new Thread(BuySystem.AnalyseMarket);
         buyThread.Start();
+
+        // Start the selling system.
+        // To be made...
       }
 
       catch (Exception e)

@@ -36,6 +36,7 @@ namespace Trading_Bot
         // Set the Client.
         BClient = AutomatedTradeBot.BClient;
 
+        // Get the fees for any transaction
         GetAccountFees().GetAwaiter();
 
         while (true)
@@ -92,6 +93,9 @@ namespace Trading_Bot
 
         foreach (var probableSymbol in responseObj["symbols"])
         {
+          // Intentionally stopping too many requests from being made, will start using wbsockets when infrastructure is ready.
+          Thread.Sleep(10000);
+
           // Check if the symbol is being actively traded in the marketplace.
           if (probableSymbol["status"].Value<string>().Equals("TRADING"))
           {
@@ -134,8 +138,6 @@ namespace Trading_Bot
 
       try
       {
-        // Intentionally stopping too many requests from being made, will start using wbsockets when infrastructure is ready.
-        Thread.Sleep(1000);
         Log.Msg($"Analysing: '{ asset.Item1 }'.", MessageLog.NORMAL);
 
         Dictionary<string, object> twentyFourHourPerformanceParams = new();
@@ -168,18 +170,54 @@ namespace Trading_Bot
         orderParam.Add("symbol", asset.Item1);
         orderParam.Add("side", "BUY");
         orderParam.Add("type", "MARKET");
-        orderParam.Add("quantity", minimumQuantity);
+        orderParam.Add("quoteOrderQty", minimumQuantity);
 
         Log.Msg($"Buying asset: '{ asset.Item1}' .", MessageLog.NORMAL);
 
-        string orderResponseString = await BClient.SendSignedAsync("/fapi/v1/order", HttpMethod.Post, orderParam);
+        var result = await PlaceBuyOrder(orderParam);
 
+        switch (result)
+        {
+          case ORDER_STATUS.INSUFFICIENT_FUNDS:
+            // Buy BNB use it to buy then base asset and then try again...
+            Log.Msg("Your wallet has insufficient funds to place this order", MessageLog.ERROR);
+            break;
+
+          case ORDER_STATUS.SUCCESS:
+            // Success, check your placed orders.
+            Log.Msg($"Successfully bought '{ asset.Item1 }'.", MessageLog.SUCCESS);
+            break;
+
+          case ORDER_STATUS.TIME_OUT_OF_SYNC:
+            Log.Msg("Your computer time is out of sync to make this request...", MessageLog.WARNING);
+            Log.Msg("Windows Fix: Time and Language -> Date and Time -> Synchronise Your Clock -> Sync Now.", MessageLog.WARNING);
+            break;
+
+          default:
+            Log.Msg($"Unexpected Error occured when attempting to buy: '{ asset.Item1 }'.", MessageLog.ERROR);
+            break;
+        }
       }
       catch (Exception e)
       {
         Log.Msg(e.Message, MessageLog.ERROR);
         Log.Msg($"Unable to analyse: '{ asset.Item1 }.' ", MessageLog.ERROR);
       }
+    }
+
+    private static async Task<ORDER_STATUS> PlaceBuyOrder(Dictionary<string, object> placeOrderParam)
+    {
+      if (placeOrderParam is null) { return ORDER_STATUS.INVALID_PARAMETER; }
+
+      string orderResponseString = await BClient.SendSignedAsync("/api/v3/order", HttpMethod.Post, placeOrderParam);
+
+      if (orderResponseString.Contains("1021"))
+        return ORDER_STATUS.TIME_OUT_OF_SYNC;
+
+      if (orderResponseString.Contains("Account has insufficient balance for requested action"))
+        return ORDER_STATUS.INSUFFICIENT_FUNDS;
+
+      return ORDER_STATUS.SUCCESS;
     }
   }
 }

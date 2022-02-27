@@ -30,6 +30,11 @@ namespace Trading_Bot.Logging
             Console.ForegroundColor = ConsoleColor.DarkRed;
             Console.WriteLine(message);
             break;
+
+          case MessageLog.SUCCESS:
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(message);
+            break;
         }
 
         Console.ResetColor();

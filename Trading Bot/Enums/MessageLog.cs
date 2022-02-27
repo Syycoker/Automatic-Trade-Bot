@@ -11,6 +11,7 @@ namespace Trading_Bot.Enums
     NONE = 0,
     NORMAL = 1,
     WARNING = 2,
-    ERROR = 3
+    ERROR = 3,
+    SUCCESS = 4,
   }
 }

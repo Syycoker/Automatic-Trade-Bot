@@ -1,4 +1,4 @@
-# Newest Update, I'm slowing down all threads (1000) to 10 seconds because the binance system will ban your IP for 5 minutes when you make too many calls because the "v1/exchangeInfo" endpoint weight has increased by '1', although sleeping the current thread to 1 second will still be fine, I did this for safety!
+# Newest Update: Slowing down all threads to 10 seconds. Binance system will ban your IP for 5 minutes when you make too many calls because the "v1/exchangeInfo" endpoint weight has increased by '1', sleeping the thread to 1 second will still be fine.
 
 ## Fractional Trade Bot
 To use the application, initially run the application and you should recieve an error stating "no user authentication file found".

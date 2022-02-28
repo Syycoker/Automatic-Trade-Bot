@@ -14,7 +14,7 @@ The application will then create a default xml file called "UserAuthentication.x
 - It will then find all coins that're about to be traded in the binance marketplace,
 - It then creates a thread to find information about the specific coin and calculates its metrics using some math I haphazardly put together, i.e. its price change (%) in the last 24 hours
 - If the system deems the coin acceptable, it will initiate a buy order for that asset.
-- - Check your binance wallet for the noew converted asset!
+- - Check your binance wallet for the now converted asset!
 
 ## Todo List
 - Lock the 'TotalPercentageChange' field from other threads to keep it updated and valid. although doesn't seem to be a problem as of now.

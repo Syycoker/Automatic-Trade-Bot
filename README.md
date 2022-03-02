@@ -25,3 +25,5 @@ The application will then create a default xml file called "UserAuthentication.x
 * When I have time:
 - Adding Frontend (Xamarin) to give a more "user friendly" UI for the user.
 - Adding a "Sell System" to bring in profit*.
+
+[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=syycoker)](https://github.com/anuraghazra/github-readme-stats)

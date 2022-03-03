@@ -1,4 +1,4 @@
-# Newest Update: Slowing down all "analysis threads" to '10' seconds. Binance's API system will ban your IP for 5 minutes when you make too many calls because the "v1/exchangeInfo" endpoint weight has increased by '1', sleeping the thread to 1 second will still be fine.
+# Newest Update: Slowing down all "analysis threads" to '10' seconds. Binance's API system will ban your IP for 5 minutes when you make too many calls because the "v1/exchangeInfo" endpoint weight has increased by '1', sleeping the threads to 1 second will still be fine.
 
 ## Fractional Trade Bot
 To use the application, initially run the application and you should recieve an error stating "no user authentication file found".
@@ -11,9 +11,10 @@ The application will then create a default xml file called "UserAuthentication.x
 
 ## What to expect once you've successfully passed the authorisation stage
 - The program will automatically start the "BuySystem" static class,
-- It will then find all coins that're about to be traded in the binance marketplace,
-- It then creates a thread to find information about the specific coin and calculates its metrics using some math I haphazardly put together, i.e. its price change (%) in the last 24 hours
-- If the system deems the coin acceptable, it will initiate a buy order for that asset.
+- It will then find all coins that're tradeable in the marketplace,
+- It then creates a thread to get information about the specific coin (i.e. rolling 24 window price change in percentages),
+- Compares the coin to the performace of the average coin, i.e. is the price change positive? It is? Is the price change greater than the average price change? It is?
+- Place a market order for the coin.
 - - Check your binance wallet for the now converted asset!
 
 ## Todo List
@@ -23,7 +24,6 @@ The application will then create a default xml file called "UserAuthentication.x
 
 ## Mobile app Todo
 * When I have time:
-- Adding Frontend (Xamarin) to give a more "user friendly" UI for the user.
-- Adding a "Sell System" to bring in profit*.
+- Adding Frontend (Xamarin) to give a more "user friendly" UI.
 
 [![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=syycoker)](https://github.com/anuraghazra/github-readme-stats)

@@ -25,5 +25,3 @@ The application will then create a default xml file called "UserAuthentication.x
 ## Mobile app Todo
 * When I have time:
 - Adding Frontend (Xamarin) to give a more "user friendly" UI.
-
-[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=syycoker)](https://github.com/anuraghazra/github-readme-stats)

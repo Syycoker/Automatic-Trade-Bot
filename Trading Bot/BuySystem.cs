@@ -94,7 +94,7 @@ namespace Trading_Bot
         foreach (var probableSymbol in responseObj["symbols"])
         {
           // Intentionally stopping too many requests from being made, will start using wbsockets when infrastructure is ready.
-          Thread.Sleep(10000);
+          Thread.Sleep(1000);
 
           // Check if the symbol is being actively traded in the marketplace.
           if (probableSymbol["status"].Value<string>().Equals("TRADING"))
@@ -181,6 +181,27 @@ namespace Trading_Bot
           case ORDER_STATUS.INSUFFICIENT_FUNDS:
             // Buy BNB use it to buy then base asset and then try again...
             Log.Msg("Your wallet has insufficient funds to place this order", MessageLog.ERROR);
+            Log.Msg("Attempting to convert 'BNB' directly to base asset.", MessageLog.WARNING);
+
+            // Attempt another buy order
+            orderParam["symbol"] = $"BNB{ asset.Item2.Item1 }"; // -> BNB+'baseAsset'*.
+            var retryResult =  await PlaceBuyOrder(orderParam);
+
+            switch (retryResult)
+            {
+              case ORDER_STATUS.SUCCESS:
+                Log.Msg($"Successful conversion of BNB to base Asset -> '{ asset.Item2.Item1 }'.", MessageLog.SUCCESS);
+                break;
+
+              case ORDER_STATUS.INSUFFICIENT_FUNDS:
+                Log.Msg($"Insufficient 'BNB' to carry out purchase of '{ asset.Item2.Item1 }'.", MessageLog.ERROR);
+                break;
+
+              case ORDER_STATUS.TIME_OUT_OF_SYNC:
+                Log.Msg("Your computer time is out of sync to make this request...", MessageLog.WARNING);
+                Log.Msg("Windows Fix: Time and Language -> Date and Time -> Synchronise Your Clock -> Sync Now.", MessageLog.WARNING);
+                break;
+            }
             break;
 
           case ORDER_STATUS.SUCCESS:
@@ -211,10 +232,12 @@ namespace Trading_Bot
 
       string orderResponseString = await BClient.SendSignedAsync("/api/v3/order", HttpMethod.Post, placeOrderParam);
 
+      // Computer time out of sync.
       if (orderResponseString.Contains("1021"))
         return ORDER_STATUS.TIME_OUT_OF_SYNC;
 
-      if (orderResponseString.Contains("Account has insufficient balance for requested action"))
+      // Account has insufficient balance for requested action
+      if (orderResponseString.Contains("2010"))
         return ORDER_STATUS.INSUFFICIENT_FUNDS;
 
       return ORDER_STATUS.SUCCESS;

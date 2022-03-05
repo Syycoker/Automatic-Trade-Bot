@@ -59,7 +59,6 @@ namespace Trading_Bot
     /// Gets the fees for your specific account, which will be taken into account to determine whether the trade fee plus the asset will be a 'good' trade.
     /// </summary>
     /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
     private static async Task GetAccountFees()
     {
       try
@@ -131,6 +130,10 @@ namespace Trading_Bot
       }
     }
 
+    /// <summary>
+    /// Analysis the asset,checks its price change, if it satisfies all criteria, it inititates a buy order for the asset.
+    /// </summary>
+    /// <param name="tradePairDetails"></param>
     public static async void BeginAnalysis(object tradePairDetails)
     {
       // Cast object into asset Tuple
@@ -230,6 +233,11 @@ namespace Trading_Bot
       }
     }
 
+    /// <summary>
+    /// Places an order (for this we're using a market order) for the asset.
+    /// </summary>
+    /// <param name="placeOrderParam"></param>
+    /// <returns></returns>
     private static async Task<ORDER_STATUS> PlaceBuyOrder(Dictionary<string, object> placeOrderParam)
     {
       if (placeOrderParam is null) { return ORDER_STATUS.INVALID_PARAMETER; }

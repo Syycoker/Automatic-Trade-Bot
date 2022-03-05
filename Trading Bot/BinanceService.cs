@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Web;
 using Newtonsoft.Json;
 using Trading_Bot;
-using Trading_Bot.Configuration_Files;
 
 namespace BinanceDotNet
 {
@@ -35,16 +34,23 @@ namespace BinanceDotNet
     }
     #endregion
     #region Private
+    /// <summary>
+    /// Uses the HttpClient instantiated in 'AutomatedTradeBot' to make a public/signed request to the binance api endpoints.
+    /// </summary>
+    /// <param name="requestUri"></param>
+    /// <param name="httpMethod"></param>
+    /// <param name="content"></param>
+    /// <returns></returns>
     private async Task<string> SendAsync(string requestUri, HttpMethod httpMethod, object content = null)
     {
-      using (var request = new HttpRequestMessage(httpMethod, this.baseUrl + requestUri))
+      using (var request = new HttpRequestMessage(httpMethod, baseUrl + requestUri))
       {
-        request.Headers.Add("X-MBX-APIKEY", this.apiKey);
+        request.Headers.Add("X-MBX-APIKEY", apiKey);
 
         if (!(content is null))
           request.Content = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
 
-        HttpResponseMessage response = await this.httpClient.SendAsync(request);
+        HttpResponseMessage response = await httpClient.SendAsync(request);
 
         using (HttpContent responseContent = response.Content)
         {
@@ -55,6 +61,14 @@ namespace BinanceDotNet
       }
     }
 
+    /// <summary>
+    /// Combines any parameters by joining with '&' query string + value to initiate a public reuqest to return a response.
+    /// </summary>
+    /// <param name="requestUri"></param>
+    /// <param name="httpMethod"></param>
+    /// <param name="query"></param>
+    /// <param name="content"></param>
+    /// <returns></returns>
     public async Task<string> SendPublicAsync(string requestUri, HttpMethod httpMethod, Dictionary<string, object> query = null, object content = null)
     {
       if (!(query is null))
@@ -67,9 +81,17 @@ namespace BinanceDotNet
         }
       }
 
-      return await this.SendAsync(requestUri, httpMethod, content);
+      return await SendAsync(requestUri, httpMethod, content);
     }
 
+    /// <summary>
+    /// Combines any parameters by joining with '&' query string + value to initiate a signed request to return a response.
+    /// </summary>
+    /// <param name="requestUri"></param>
+    /// <param name="httpMethod"></param>
+    /// <param name="query"></param>
+    /// <param name="content"></param>
+    /// <returns></returns>
     public async Task<string> SendSignedAsync(string requestUri, HttpMethod httpMethod, Dictionary<string, object> query = null, object content = null)
     {
       StringBuilder queryStringBuilder = new StringBuilder();
@@ -86,15 +108,21 @@ namespace BinanceDotNet
       long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
       queryStringBuilder.Append("timestamp=").Append(now);
 
-      string signature = Sign(queryStringBuilder.ToString(), this.apiSecret);
+      string signature = Sign(queryStringBuilder.ToString(), apiSecret);
       queryStringBuilder.Append("&signature=").Append(signature);
 
       StringBuilder requestUriBuilder = new StringBuilder(requestUri);
       requestUriBuilder.Append("?").Append(queryStringBuilder.ToString());
 
-      return await this.SendAsync(requestUriBuilder.ToString(), httpMethod, content);
+      return await SendAsync(requestUriBuilder.ToString(), httpMethod, content);
     }
 
+    /// <summary>
+    /// Encrypts signature using api secret
+    /// </summary>
+    /// <param name="source">Signature</param>
+    /// <param name="key">Api secret</param>
+    /// <returns></returns>
     public static string Sign(string source, string key)
     {
       byte[] keyBytes = Encoding.UTF8.GetBytes(key);

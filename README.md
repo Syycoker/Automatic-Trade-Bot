@@ -5,7 +5,7 @@ To use the application, initially run the application and you should recieve an 
 The application will then create a default xml file called "UserAuthentication.xml" (DO NOT SHARE) onto your desktop.
 
 # Fig 1
-![What you should first recieve: Invalid File](https:sylascoker.co.uk/img/invalidFile.PNG)
+![What you should first recieve: Invalid File](https://sylascoker.co.uk/img/invalidFile.PNG)
 
 ## How to use the "UserAuthentication.xml" file:
 * open the file

@@ -7,10 +7,16 @@ The application will then create a default xml file called "UserAuthentication.x
 # Fig 1
 ![What you should first recieve: Invalid File](https://sylascoker.co.uk/img/invalidFile.PNG)
 
+# Fig 2
+![Where to find the file](https://sylascoker.co.uk/img/fileLocation.PNG)
+
 ## How to use the "UserAuthentication.xml" file:
 * open the file
 * Decide whether you would like to use the "Test" Servers (recommended) and or the live marketplace servers.
 * Fill in the appropriate attribute values with your secure API keys either from the Binance Test server or Marketplace.
+
+# Fig 3
+![What to put into the attribute values](https://sylascoker.co.uk/img/fileTutorial.PNG)
 
 ## What to expect once you've successfully passed the authorisation stage
 - The program will automatically start the "BuySystem" static class,
@@ -19,6 +25,9 @@ The application will then create a default xml file called "UserAuthentication.x
 - Compares the coin to the performace of the average coin, i.e. is the price change positive? It is? Is the price change greater than the average price change? It is?
 - Place a market order for the coin.
 - - Check your binance wallet for the now converted asset!
+
+# Fig 4
+![Enjoy](https://sylascoker.co.uk/img/finalStage.PNG)
 
 ## Todo List
 - Lock the 'TotalPercentageChange' field from other threads to keep it updated and valid. although doesn't seem to be a problem as of now.

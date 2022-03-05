@@ -195,12 +195,16 @@ namespace Trading_Bot
 
               case ORDER_STATUS.INSUFFICIENT_FUNDS:
                 Log.Msg($"Insufficient 'BNB' to carry out purchase of '{ asset.Item2.Item1 }'.", MessageLog.ERROR);
-                break;
+                return;
 
               case ORDER_STATUS.TIME_OUT_OF_SYNC:
                 Log.Msg("Your computer time is out of sync to make this request...", MessageLog.WARNING);
                 Log.Msg("Windows Fix: Time and Language -> Date and Time -> Synchronise Your Clock -> Sync Now.", MessageLog.WARNING);
-                break;
+                return;
+
+              default:
+                Log.Msg($"Unable to buy asset: '{ asset.Item1 }'...", MessageLog.WARNING);
+                return;
             }
             break;
 
@@ -212,7 +216,7 @@ namespace Trading_Bot
           case ORDER_STATUS.TIME_OUT_OF_SYNC:
             Log.Msg("Your computer time is out of sync to make this request...", MessageLog.WARNING);
             Log.Msg("Windows Fix: Time and Language -> Date and Time -> Synchronise Your Clock -> Sync Now.", MessageLog.WARNING);
-            break;
+            return;
 
           default:
             Log.Msg($"Unexpected Error occured when attempting to buy: '{ asset.Item1 }'.", MessageLog.ERROR);
@@ -240,7 +244,10 @@ namespace Trading_Bot
       if (orderResponseString.Contains("2010"))
         return ORDER_STATUS.INSUFFICIENT_FUNDS;
 
-      return ORDER_STATUS.SUCCESS;
+      if (orderResponseString.Contains("200"))
+        return ORDER_STATUS.SUCCESS;
+
+      return ORDER_STATUS.NONE;
     }
   }
 }

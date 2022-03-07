@@ -159,7 +159,7 @@ namespace Trading_Bot
         decimal averagePriceChange = TotalPriceChange / AssetsChecked;
 
         // If the coin doesn't have a positive price change and doesn't beat the average price change, don't consider the coin.
-        if (priceChangePercent < 0 && priceChangePercent < averagePriceChange) { return; }
+        if (priceChangePercent < 0 || priceChangePercent < averagePriceChange) { return; }
 
         // Only want asset if the price change is equal to the average price change or more.
         // Get the asset's current bid / ask price

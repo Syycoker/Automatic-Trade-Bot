@@ -24,7 +24,7 @@ The application will then create a default xml file called "UserAuthentication.x
 - It then creates a thread to get information about the specific coin (i.e. rolling 24 window price change in percentages),
 - Compares the coin to the performace of the average coin, i.e. is the price change positive? It is? Is the price change greater than the average price change? It is?
 - Place a market order for the coin.
-- - Check your binance wallet for the now converted asset!
+- Check your binance wallet for the now converted asset!
 
 # Fig 4
 ![Enjoy](https://sylascoker.co.uk/img/finalStage.PNG)

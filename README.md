@@ -4,6 +4,8 @@
 To use the application, initially run the application and you should recieve an error stating "no user authentication file found".
 The application will then create a default xml file called "UserAuthentication.xml" (DO NOT SHARE) onto your desktop.
 
+The program is designed to run 24/7, although periodic syncing of the system clock is needed every so often (once a week).
+
 # Fig 1
 ![What you should first recieve: Invalid File](https://sylascoker.co.uk/img/invalidFile.PNG)
 

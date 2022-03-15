@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ZUMVlUOBzuHaaBK0KJSfQc9JBuqiLnUY4HVC3/rzRV8rZAIOSl2VFm/IT/ShI1bKu119k8Nr7faeY8Okg12yyQ==",
+  "dgSpecHash": "nC1Jiw0jwxXyY276AUtgAH9DgdMMo+xZDFEJPDVzkBOOnimagZmVSjsf6v1uDFcaap6qS9bEQJ3y8HFe7cFHPw==",
   "success": true,
   "projectFilePath": "C:\\Users\\coker\\Documents\\GitHub\\Automatic-Trade-Bot\\Trading Bot\\Trading Bot.csproj",
   "expectedPackageFiles": [
@@ -16,7 +16,7 @@
     "C:\\Users\\coker\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\1.0.0\\microsoft.extensions.caching.abstractions.1.0.0.nupkg.sha512",
     "C:\\Users\\coker\\.nuget\\packages\\microsoft.extensions.caching.memory\\1.0.0\\microsoft.extensions.caching.memory.1.0.0.nupkg.sha512",
     "C:\\Users\\coker\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\1.0.0\\microsoft.extensions.dependencyinjection.abstractions.1.0.0.nupkg.sha512",
-    "C:\\Users\\coker\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\3.1.0\\microsoft.extensions.logging.abstractions.3.1.0.nupkg.sha512",
+    "C:\\Users\\coker\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\6.0.1\\microsoft.extensions.logging.abstractions.6.0.1.nupkg.sha512",
     "C:\\Users\\coker\\.nuget\\packages\\microsoft.extensions.options\\1.0.0\\microsoft.extensions.options.1.0.0.nupkg.sha512",
     "C:\\Users\\coker\\.nuget\\packages\\microsoft.extensions.primitives\\1.0.0\\microsoft.extensions.primitives.1.0.0.nupkg.sha512",
     "C:\\Users\\coker\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",

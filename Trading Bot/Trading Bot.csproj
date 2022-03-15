@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Binance.Net" Version="7.2.7" />
     <PackageReference Include="BinanceDotNet" Version="4.12.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
     <PackageReference Include="MySql.Data" Version="8.0.27" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="RestSharp" Version="106.12.0" />

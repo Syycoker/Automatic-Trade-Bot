@@ -215,3 +215,6 @@ C:\Users\Sylas Coker\Documents\GitHub\Automatic-Trade-Bot\Trading Bot\obj\Debug\
 C:\Users\Sylas Coker\Documents\GitHub\Automatic-Trade-Bot\Trading Bot\obj\Debug\net5.0-windows\ref\Trading Bot.dll
 C:\Users\Sylas Coker\Documents\GitHub\Automatic-Trade-Bot\Trading Bot\obj\Debug\net5.0-windows\Trading Bot.pdb
 C:\Users\Sylas Coker\Documents\GitHub\Automatic-Trade-Bot\Trading Bot\obj\Debug\net5.0-windows\Trading Bot.genruntimeconfig.cache
+C:\Users\coker\Documents\GitHub\Automatic-Trade-Bot\Trading Bot\obj\Debug\net5.0-windows\Trading Bot.dll
+C:\Users\coker\Documents\GitHub\Automatic-Trade-Bot\Trading Bot\obj\Debug\net5.0-windows\ref\Trading Bot.dll
+C:\Users\coker\Documents\GitHub\Automatic-Trade-Bot\Trading Bot\obj\Debug\net5.0-windows\Trading Bot.pdb
